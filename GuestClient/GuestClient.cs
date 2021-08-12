@@ -47,11 +47,7 @@ namespace Hagi.HagiGuest
             if (this.options is JoinRequestOptions joinRequest)
             {
                 this.options.GuestId = joinRequest.Guest;
-            }
-            else if (Config.Current["machine-name"] != Environment.MachineName)
-            {
-                // Machine name has changed since last time.
-                await this.JoinHost();
+                autoJoin = false;
             }
 
             do
@@ -61,7 +57,16 @@ namespace Hagi.HagiGuest
                 if (string.IsNullOrEmpty(this.options.GuestId)) {
                     this.options.GuestId = Config.Current["guest"] ?? string.Empty;
                 }
-                this.options.Secret ??= Config.Current["secret"];
+                this.options.Secret = Config.Current["secret"];
+
+                if (Config.Current["machine-name"] != SmbShare.FullName && autoJoin)
+                {
+                    // Machine name has changed since last time.
+                    await this.JoinHost();
+                    retry = true;
+                    autoJoin = false;
+                    continue;
+                }
 
                 this.ResolvePaths();
 
@@ -153,7 +158,7 @@ namespace Hagi.HagiGuest
                 Config.Current["host"] = this.options.Host;
 
                 JoinRequest? joinRequest = request as JoinRequest;
-                Config.Current["machine-name"] = joinRequest?.MachineName ?? Environment.MachineName;
+                Config.Current["machine-name"] = joinRequest?.MachineName ?? SmbShare.FullName;
 
                 Config.Current.SaveFile();
             }
@@ -167,6 +172,7 @@ namespace Hagi.HagiGuest
             Random random = new Random();
             return $"{Environment.MachineName}-{OS.Current.Name}-{random.Next():x}";
         }
+
         /// <summary>
         /// Join the host machine.
         /// </summary>
@@ -177,7 +183,7 @@ namespace Hagi.HagiGuest
             JoinRequest request = new JoinRequest()
             {
                 Guest = guest,
-                MachineName = Environment.MachineName
+                MachineName = SmbShare.FullName
             };
 
             await this.MakeRequest<JoinResponse>(request);

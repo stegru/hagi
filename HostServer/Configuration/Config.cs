@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 namespace HostServer.Configuration
 {
     using System;
+    using GuestIntegration;
 
     /// <summary>
     /// Host server configuration.
@@ -22,10 +23,13 @@ namespace HostServer.Configuration
         public int Port { get; private set; } = 5580;
 
         [JsonProperty]
-        public Dictionary<string, GuestConfig> GuestConfig { get; set; } = new Dictionary<string, GuestConfig>();
+        public Dictionary<string, Guest> Guests { get; set; } = new Dictionary<string, Guest>();
 
         [JsonProperty]
         public string? SharedSecret { get; set; }
+
+        [JsonProperty]
+        public ShellCommands Commands { get; set; } = new ShellCommands();
 
         public Config(ILogger<Config> logger, Paths paths, AppSettings appSettings, IConfiguration configuration)
         {
@@ -47,7 +51,9 @@ namespace HostServer.Configuration
             }
 
 
-            this.Load(configFile);
+            //this.Load(configFile);
+            this.Load(this.Paths.GetDefaultConfigFile("hagi-host.json5"));
+            this.Save(configFile);
         }
 
         public void Load(string configFile)
@@ -56,56 +62,64 @@ namespace HostServer.Configuration
             using TextReader reader = File.OpenText(configFile);
             JsonSerializer.Create().Populate(new JsonTextReader(reader), this);
 
-            if (!this.GuestConfig.ContainsKey("*"))
+            if (!this.Guests.ContainsKey("*"))
             {
-                this.GuestConfig["*"] = new GuestConfig();
+                this.Guests["*"] = new Guest();
             }
 
-            foreach ((string key, GuestConfig guestConfig) in this.GuestConfig)
+            foreach ((string key, Guest guest) in this.Guests)
             {
-                guestConfig.GuestId = key;
+                guest.Config = this;
+                guest.GuestId = key;
             }
+        }
 
+        public void Save(string configFile)
+        {
+            using TextWriter writer = new StreamWriter(configFile);
+            JsonSerializer.Create().Serialize(writer, this);
+            writer.Close();
         }
 
         /// <summary>
         /// Gets configuration for a guest.
         /// </summary>
-        public GuestConfig GetGuest(string guestId = "*")
+        public Guest GetGuest(string guestId = "*")
         {
-            return this.GuestConfig.TryGetValue(guestId, out GuestConfig? guestConfig)
-                ? guestConfig
-                : this.GuestConfig["*"];
+            return this.Guests.TryGetValue(guestId, out Guest? guest)
+                ? guest
+                : this.Guests["*"];
         }
 
         /// <summary>
         /// Gets configuration for a guest.
         /// </summary>
-        public GuestConfig? GetGuest(string guestId, bool noFallback)
+        public Guest? GetGuest(string guestId, bool noFallback)
         {
-            return this.GuestConfig.TryGetValue(guestId, out GuestConfig? guestConfig)
-                ? guestConfig
+            return this.Guests.TryGetValue(guestId, out Guest? guest)
+                ? guest
                 : noFallback
                     ? null
-                    : this.GuestConfig["*"];
+                    : this.Guests["*"];
         }
 
         /// <summary>
         /// Adds a new guest.
         /// </summary>
-        public GuestConfig AddGuest(string guestId)
+        public Guest AddGuest(string guestId)
         {
-            if (this.GuestConfig.ContainsKey(guestId))
+            if (this.Guests.ContainsKey(guestId))
             {
                 throw new ApplicationException($"Guest '{guestId}' already exists.");
             }
 
-            GuestConfig guest = new GuestConfig()
+            Guest guest = new Guest()
             {
-                GuestId = guestId
+                GuestId = guestId,
+                Config = this
             };
 
-            this.GuestConfig.Add(guestId, guest);
+            this.Guests.Add(guestId, guest);
             return guest;
         }
     }

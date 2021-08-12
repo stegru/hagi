@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-namespace Hagi.HagiGuest
+﻿namespace Hagi.HagiGuest
 {
     using System;
     using CommandLine;

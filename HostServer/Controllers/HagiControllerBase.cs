@@ -5,13 +5,14 @@ using Microsoft.Extensions.Logging;
 namespace HostServer.Controllers
 {
     using Auth;
+    using GuestIntegration;
 
     public class HagiControllerBase : ControllerBase
     {
         protected readonly ILogger<OpenController> Logger;
         protected readonly Config Config;
 
-        protected GuestConfig GuestConfig => this.HttpContext.GetGuestConfig();
+        protected Guest Guest => this.HttpContext.GetGuest();
 
         public HagiControllerBase(ILogger<OpenController> logger, Config config)
         {

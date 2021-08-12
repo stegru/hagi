@@ -1,14 +1,10 @@
 namespace Hagi.HagiGuest.Install
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
     using System.Runtime.Versioning;
     using HagiShared.Platform;
-    using Microsoft.Win32;
 
     /// <summary>
     /// Registers the executable with Windows, and updates the PATH environment.

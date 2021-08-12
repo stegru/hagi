@@ -5,6 +5,7 @@ namespace HostServer.Auth
     using System.Security.Authentication;
     using System.Threading.Tasks;
     using Configuration;
+    using GuestIntegration;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc.Controllers;
@@ -32,7 +33,7 @@ namespace HostServer.Auth
             string secret = context.Request.Headers["X-Secret"].ToString().Trim();
 
             bool authenticated;
-            GuestConfig? guestConfig;
+            Guest? guest;
             try
             {
                 if (string.IsNullOrEmpty(guestId))
@@ -45,14 +46,14 @@ namespace HostServer.Auth
                     throw new InvalidCredentialException("X-Secret header is missing");
                 }
 
-                guestConfig = config.GetGuest(guestId, true);
+                guest = config.GetGuest(guestId, true);
 
-                if (guestConfig == null)
+                if (guest == null)
                 {
                     throw new InvalidCredentialException("Unknown guest");
                 }
 
-                if (guestConfig.Secret != secret)
+                if (guest.Secret != secret)
                 {
                     throw new InvalidCredentialException("Wrong secret");
                 }
@@ -62,12 +63,12 @@ namespace HostServer.Auth
             catch when (!authRequired)
             {
                 authenticated = false;
-                guestConfig = null;
+                guest = null;
             }
 
-            if (authenticated && guestConfig != null)
+            if (authenticated && guest != null)
             {
-                context.SetGuestConfig(guestConfig);
+                context.SetGuest(guest);
             }
 
             await this._next(context);
@@ -82,13 +83,13 @@ namespace HostServer.Auth
             return builder.UseMiddleware<GuestAuthMiddleware>();
         }
 
-        public static GuestConfig GetGuestConfig(this HttpContext context)
+        public static Guest GetGuest(this HttpContext context)
         {
-            return context.Features.Get<GuestConfig>();
+            return context.Features.Get<Guest>();
         }
-        public static void SetGuestConfig(this HttpContext context, GuestConfig guestConfig)
+        public static void SetGuest(this HttpContext context, Guest guest)
         {
-            context.Features.Set(guestConfig);
+            context.Features.Set(guest);
         }
     }
 

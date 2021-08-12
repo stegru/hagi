@@ -1,8 +1,5 @@
-using System.Runtime.InteropServices;
-
 namespace HagiShared.Platform
 {
-    using System;
     using global::System;
 
     // ReSharper disable once InconsistentNaming
@@ -30,6 +27,7 @@ namespace HagiShared.Platform
         public string Name { get; }
 
         public abstract Platform Platform { get; }
+        public abstract string UserId { get; }
         public abstract void Open(string path);
     }
 

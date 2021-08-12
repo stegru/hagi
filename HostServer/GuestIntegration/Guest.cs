@@ -1,4 +1,4 @@
-namespace HostServer.Configuration
+namespace HostServer.GuestIntegration
 {
     using System;
     using System.Collections.Generic;
@@ -6,14 +6,17 @@ namespace HostServer.Configuration
     using System.Linq;
     using System.Runtime.Serialization;
     using System.Security.Cryptography;
+    using Configuration;
     using Newtonsoft.Json;
 
     /// <summary>
     /// Configuration for a guest.
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
-    public class GuestConfig
+    public class Guest
     {
+        public Config Config { get; set; } = null!;
+
         [JsonProperty]
         public Dictionary<string, string> PathMappings { get; set; } = null!;
 
@@ -29,8 +32,16 @@ namespace HostServer.Configuration
         [JsonProperty]
         public string MachineName { get; set; } = null!;
 
+        [JsonProperty]
+        public ShareMount.ShareCredentials ShareCredentials { get; set; } = new ShareMount.ShareCredentials();
+
+        [JsonProperty]
+        public string? MountShare { get; set; } = ShareMount.DefaultShareName;
+        [JsonProperty]
+        public string? MountPath { get; set; }
+
         [OnDeserialized]
-        public void Initialise()
+        public void Initialise(StreamingContext context)
         {
             this.guestPaths = this.PathMappings.Select(kv => new PathMapping(kv.Key, kv.Value))
                 .OrderByDescending(mapping => mapping.Guest.Split('/').Length)
@@ -51,10 +62,22 @@ namespace HostServer.Configuration
 
         public string? MapPath(string guestPath)
         {
-            string path = GuestConfig.NormalisePath(guestPath, true);
+            string path = Guest.NormalisePath(guestPath);
 
-            PathMapping? mapping = this.guestPaths.FirstOrDefault(m => path.StartsWith(m.Guest));
+            PathMapping? mapping = this.guestPaths?.FirstOrDefault(m => path.StartsWith(m.Guest));
 
+            if (mapping == null && !string.IsNullOrEmpty(this.MountPath))
+            {
+                if (path.StartsWith("C:/", StringComparison.OrdinalIgnoreCase))
+                {
+                    path = path[2..];
+                }
+                if (path.StartsWith("/"))
+                {
+                    mapping = new PathMapping(this.MountPath, "/");
+                }
+            }
+            
             if (mapping != null)
             {
                 string subPath = path[(mapping.Guest.Length - 0)..];
@@ -80,10 +103,10 @@ namespace HostServer.Configuration
 
     public class PathMapping
     {
-        public PathMapping(string host, string guest)
+        public PathMapping(string hostPath, string guestPath)
         {
-            this.Host = GuestConfig.NormalisePath(host);
-            this.Guest = GuestConfig.NormalisePath(guest, true);
+            this.Host = GuestIntegration.Guest.NormalisePath(hostPath);
+            this.Guest = GuestIntegration.Guest.NormalisePath(guestPath, true);
         }
 
         public string Host { get; }

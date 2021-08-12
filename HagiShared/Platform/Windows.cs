@@ -1,14 +1,14 @@
-using System.Diagnostics;
 using NotImplementedException = System.NotImplementedException;
 
-namespace HagiShared.System
+namespace HagiShared.Platform
 {
-    using global::System.Runtime.InteropServices;
-    using Platform;
+    using System.Diagnostics;
 
     public class Windows : OS
     {
         public override Platform Platform => Platform.Windows;
+
+        public override string UserId => throw new NotImplementedException();
 
         public override void Open(string path)
         {

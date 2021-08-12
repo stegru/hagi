@@ -1,9 +1,7 @@
-using System.Diagnostics;
-
-namespace HagiShared.System
+namespace HagiShared.Platform
 {
-    using global::System.Runtime.InteropServices;
-    using Platform;
+    using global::System;
+    using global::System.Diagnostics;
 
     public class Linux : OS
     {
@@ -18,5 +16,8 @@ namespace HagiShared.System
                 Arguments = path
             });
         }
+
+        public override string UserId => Environment.GetEnvironmentVariable("UID")
+                                         ?? throw new ApplicationException("$UID is not defined");
     }
 }

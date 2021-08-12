@@ -16,9 +16,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Remove="DefaultConfig\hagi-server.json5" />
-      <Content Include="DefaultConfig\hagi-host.json5">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <None Remove="DefaultConfig\*" />
+      <Content Include="DefaultConfig\*">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="Scripts\*" />
+      <Content Include="Scripts\*">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
 

@@ -1,3 +1,11 @@
 {
-
+  "GuestConfig": {
+    "*": {
+      "PathMappings": null,
+      "GuestId": "*",
+      "Secret": null,
+      "MachineName": null
+    }
+  },
+  "SharedSecret": null
 }

@@ -3,6 +3,8 @@
 namespace HostServer.Controllers
 {
     using System;
+    using System.Threading.Tasks;
+    using GuestIntegration;
     using HagiShared.Api;
     using HagiShared.Platform;
     using Microsoft.AspNetCore.Mvc;
@@ -22,23 +24,21 @@ namespace HostServer.Controllers
         [HttpPost("map")]
         public FileMapResponse Map(FileMapRequest request)
         {
-            GuestConfig config = this.GuestConfig;
-
-            string? mapping = config.MapPath(request.Path);
+            string? mapping = this.Guest.MapPath(request.Path);
             return new FileMapResponse(mapping);
         }
 
         [HttpPost("open")]
-        public HostResponse Post(OpenRequest openRequest)
+        public async Task<HostResponse> Post(OpenRequest openRequest)
         {
-            GuestConfig config = this.GuestConfig;
-
             string path;
 
             if (openRequest.File)
             {
-                path = config.MapPath(openRequest.Path)
+                bool mounted = await this.Guest.EnsureMounted();
+                path = this.Guest.MapPath(openRequest.Path)
                     ?? throw new ApiException($"Unable to map '{openRequest.Path}'");
+                
             }
             else
             {

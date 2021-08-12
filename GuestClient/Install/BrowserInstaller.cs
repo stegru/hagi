@@ -3,7 +3,6 @@ namespace Hagi.HagiGuest.Install
     using System.Collections.Generic;
     using System.Runtime.Versioning;
     using HagiShared.Platform;
-    using Microsoft.Win32;
 
     /// <summary>
     /// Installs this executable as a browser.

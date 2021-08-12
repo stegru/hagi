@@ -33,17 +33,17 @@ namespace HostServer.Configuration
         }
 
 
-        /// <summary>Gets a destination special to the application.</summary>
+        /// <summary>Gets a path special to the application.</summary>
         public string GetPath(AppPath appPath, string? childPath = null)
         {
             return Path.Combine(this._paths[appPath], childPath ?? string.Empty);
         }
 
-        /// <summary>Gets a destination to a config file. If it doesn't exist, default content is copied in place.</summary>
+        /// <summary>Gets a path to a config file. If it doesn't exist, default content is copied in place.</summary>
         public string GetConfigFile(string filename)
             => this.GetConfigFile(AppPath.UserConfig, filename);
 
-        /// <summary>Gets a destination to a config file. If it doesn't exist, default content is copied in place.</summary>
+        /// <summary>Gets a path to a config file. If it doesn't exist, default content is copied in place.</summary>
         public string GetConfigFile(AppPath appPath, string filename)
         {
             string path = this.GetPath(appPath, filename);
@@ -55,11 +55,16 @@ namespace HostServer.Configuration
                     Directory.CreateDirectory(directoryName);
                 }
 
-                string defaultPath = this.GetPath(AppPath.DefaultConfig, filename);
+                string defaultPath = this.GetDefaultConfigFile(filename);
                 File.Copy(defaultPath, path);
             }
 
             return path;
+        }
+
+        public string GetDefaultConfigFile(string filename)
+        {
+            return this.GetPath(AppPath.DefaultConfig, filename);
         }
     }
 

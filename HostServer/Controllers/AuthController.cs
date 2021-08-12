@@ -6,6 +6,7 @@ namespace HostServer.Controllers
     using System.Security.Authentication;
     using System.Threading.Tasks;
     using Auth;
+    using GuestIntegration;
     using HagiShared.Api;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
@@ -35,7 +36,7 @@ namespace HostServer.Controllers
                     throw new AuthenticationException("Invalid secret");
                 }
             }
-            else if (this.GuestConfig == null!)
+            else if (this.Guest == null!)
             {
                 UserMessage userMessage =
                     new UserMessage(
@@ -51,9 +52,11 @@ namespace HostServer.Controllers
                 }
             }
 
-            GuestConfig guest = this.Config.GetGuest(request.Guest, true) ?? this.Config.AddGuest(request.Guest);
+            Guest guest = this.Config.GetGuest(request.Guest, true) ?? this.Config.AddGuest(request.Guest);
             guest.GenerateSecret();
             guest.MachineName = request.MachineName;
+
+            await guest.MountShare(true);
 
             return new JoinResponse(guest.GuestId, guest.Secret);
         }

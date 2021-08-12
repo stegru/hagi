@@ -49,7 +49,7 @@ namespace Hagi.HagiGuest
         public override void ApplyDefaults()
         {
             base.ApplyDefaults();
-            this.MachineName ??= Environment.MachineName;
+            this.MachineName ??= SmbShare.FullName;
         }
     }
 

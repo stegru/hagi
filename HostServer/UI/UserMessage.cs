@@ -5,6 +5,7 @@ namespace HostServer.UI
     using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
+    using GuestIntegration;
 
     /// <summary>
     /// Displays a message to the user.
@@ -37,33 +38,16 @@ namespace HostServer.UI
                 startInfo.ArgumentList.Add(arg);
             }
 
-            Process process = new Process()
+            using Process process = new Process()
             {
-                StartInfo = startInfo,
-                EnableRaisingEvents = true
+                StartInfo = startInfo
             };
 
-            TaskCompletionSource<bool> completionSource = new TaskCompletionSource<bool>();
+            int exitCode = await process.StartAsync();
 
-            process.Exited += (sender, eventArgs) =>
-            {
-                int exitCode = process.ExitCode;
-
-                if (exitCode == 0 || (this.Question && exitCode == 1))
-                {
-                    completionSource.TrySetResult(exitCode == 0);
-                }
-                else
-                {
-                    completionSource.TrySetException(new ApplicationException($"{file} returned exit code {exitCode}"));
-                }
-
-                process.Dispose();
-            };
-
-            process.Start();
-
-            return await completionSource.Task;
+            return exitCode == 0 || (this.Question && exitCode == 1)
+                ? true
+                : throw new ApplicationException($"{file} returned exit code {exitCode}");
         }
 
         private List<string> BuildCommand()
