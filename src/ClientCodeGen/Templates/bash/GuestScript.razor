@@ -1,0 +1,30 @@
+@using System.IO
+@inherits GuestScriptTemplate
+@{
+    const string prefix = "#@include:";
+    foreach (string line in File.ReadAllLines(RelativePath("hagi-guest.template.sh")))
+    {
+        if (line.StartsWith(prefix))
+        {
+            string id = line.Substring(prefix.Length);
+            switch (id)
+            {
+                case "Help":
+                    Include<HelpTemplate>(AllRequests);
+                    break;
+                case "BuildRequest":
+                    Include<BuildRequestTemplate>(AllRequests);
+                    break;
+
+                case "OptionNames":
+                    Include<OptionNamesTemplate>(AllRequests);
+                    break;
+            }
+        }
+        else
+        {
+            WriteLiteral(line);
+            WriteLiteral("\n");
+        }
+    }
+}

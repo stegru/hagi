@@ -1,0 +1,22 @@
+@using System.Collections.Generic
+@using System.Linq
+@using Hagi.Shared.Api
+@inherits OptionNamesTemplate
+@{
+  List<string> optionNames = new List<string>();
+  List<string> optionNamesValue = new List<string>();
+  foreach (OptionAttribute option in AllRequests.SelectMany(request => request.Options))
+  {
+    if (option.IsFlag)
+    {
+      optionNames.Add(option.Name);
+    }
+    else
+    {
+      optionNamesValue.Add(option.Name);
+    }
+  }
+}
+
+REQUEST_OPTION_NAMES='@string.Join(' ', optionNames.Distinct())'
+REQUEST_OPTION_NAMES_VALUE='@string.Join(' ', optionNamesValue.Distinct())'

@@ -1,0 +1,36 @@
+@using Hagi.Shared.Api
+@inherits RequestTemplate
+
+
+[CommandLine.Verb("@Model.Request.Name?.ToLowerInvariant()", HelpText = "@Model.Request.Info")]
+[Request("@Model.Request.Path")]
+public partial class @(Model.RequestType.Name)Options : RequestOptions
+{
+    public override string RequestUrl => "@Model.Request.Path";
+
+@{
+    int valueIndex = 0;
+    foreach (OptionAttribute option in Model.Options)
+    {
+        string start;
+        start = option.IsPayload
+            ? $"CommandLine.Value({valueIndex++}"
+            : $"CommandLine.Option(\"{option.Name}\"";
+
+
+        @:[@start, HelpText = "@option.Info", Hidden = @option.Hide.ToString().ToLowerInvariant(), Required = @option.Required.ToString().ToLowerInvariant(), MetaValue = @(option.IsFlag ? "\"\"" : $"\"<{option.Name}>\""))]
+        @:public @option.PropertyInfo.PropertyType.Name @option.PropertyInfo.Name { get; set; }
+
+    }
+}
+
+    public override HostRequest GetRequest() {
+        @Model.RequestType.Name req = new @(Model.RequestType.Name)() {
+        @foreach (OptionAttribute option in Model.Options)
+        {
+            @:@option.PropertyInfo.Name = this.@option.PropertyInfo.Name,
+        }
+        };
+        return req;
+    }
+}

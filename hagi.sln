@@ -1,12 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostServer", "HostServer\HostServer.csproj", "{556A71ED-7064-42FF-9A05-68ACDE60DA6C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hagi.HostServer", "src\Hagi.HostServer\Hagi.HostServer.csproj", "{556A71ED-7064-42FF-9A05-68ACDE60DA6C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuestClient", "GuestClient\GuestClient.csproj", "{94A07987-0E28-47EB-B5BC-D3EF91BCF35A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hagi.GuestClient", "src\Hagi.GuestClient\Hagi.GuestClient.csproj", "{94A07987-0E28-47EB-B5BC-D3EF91BCF35A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HagiShared", "HagiShared\HagiShared.csproj", "{0EE58B6D-1541-4FA4-A57F-D839962EB400}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hagi.Shared", "src\Hagi.Shared\Hagi.Shared.csproj", "{0EE58B6D-1541-4FA4-A57F-D839962EB400}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientCodeGen", "ClientCodeGen\ClientCodeGen.csproj", "{A94F7346-A8BE-44AF-863D-62CB67C9D61D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientCodeGen", "src\ClientCodeGen\ClientCodeGen.csproj", "{A94F7346-A8BE-44AF-863D-62CB67C9D61D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
