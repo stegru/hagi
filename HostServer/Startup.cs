@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using HostServer.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -19,9 +21,12 @@ namespace HostServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<Config>(this.Configuration.GetSection(Config.SectionName));
             services.AddControllers();
-            services.AddSingleton<Config>(sp => sp.GetRequiredService<IOptions<Config>>().Value.Initialise());
+            services.Configure<AppSettings>(this.Configuration.GetSection(AppSettings.SectionName));
+            services.AddSingleton<AppSettings>(sp => sp.GetRequiredService<IOptions<AppSettings>>().Value.Initialise());
+            services.AddSingleton<Config>();
+            services.AddSingleton<Paths>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -38,6 +43,7 @@ namespace HostServer
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
+            app.ApplicationServices.GetRequiredService<Config>();
         }
 
     }

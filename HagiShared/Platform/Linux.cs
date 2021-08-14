@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics;
+using NotImplementedException = System.NotImplementedException;
 
 namespace HagiShared.System
 {

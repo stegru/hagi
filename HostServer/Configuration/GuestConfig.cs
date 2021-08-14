@@ -1,24 +1,27 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
+using HagiShared.Api;
 
-namespace HostServer
+namespace HostServer.Configuration
 {
-    public class Config
+    /// <summary>
+    /// Configuration for a guest.
+    /// </summary>
+    public class GuestConfig
     {
-        public const string SectionName = "hagi";
-
         public Dictionary<string, string> PathMappings { get; set; } = null!;
 
         private List<PathMapping> guestPaths = null!;
 
-        public Config Initialise()
+
+        [OnDeserialized]
+        public void Initialise()
         {
             this.guestPaths = this.PathMappings.Select(kv => new PathMapping(kv.Key, kv.Value))
                 .OrderByDescending(mapping => mapping.Guest.Split('/').Length)
                 .ToList();
-
-            return this;
         }
 
         public static string NormalisePath(string path, bool? trailingSlash = false)
@@ -35,7 +38,7 @@ namespace HostServer
 
         public string? MapPath(string guestPath)
         {
-            string path = Config.NormalisePath(guestPath, true);
+            string path = GuestConfig.NormalisePath(guestPath, true);
 
             PathMapping? mapping = this.guestPaths.FirstOrDefault(m => path.StartsWith(m.Guest));
 
@@ -48,17 +51,18 @@ namespace HostServer
 
             return null;
         }
-
-        public class PathMapping
-        {
-            public PathMapping(string host, string guest)
-            {
-                this.Host = Config.NormalisePath(host);
-                this.Guest = Config.NormalisePath(guest, true);
-            }
-
-            public string Host { get; }
-            public string Guest { get; }
-        }
     }
+
+    public class PathMapping
+    {
+        public PathMapping(string host, string guest)
+        {
+            this.Host = GuestConfig.NormalisePath(host);
+            this.Guest = GuestConfig.NormalisePath(guest, true);
+        }
+
+        public string Host { get; }
+        public string Guest { get; }
+    }
+
 }

@@ -11,7 +11,6 @@ namespace HostServer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("http://localhost:5580/");
                 })
                 .Build()
                 .Run();

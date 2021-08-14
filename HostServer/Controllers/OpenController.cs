@@ -1,4 +1,6 @@
-﻿namespace HostServer.Controllers
+﻿using HostServer.Configuration;
+
+namespace HostServer.Controllers
 {
     using System;
     using HagiShared.Api;
@@ -8,27 +10,26 @@
 
     [ApiController]
     [Route("hagi")]
-    public class OpenController : ControllerBase
+    public class OpenController : HagiControllerBase
     {
-        private readonly ILogger<OpenController> _logger;
-        private readonly Config _config;
-
-        public OpenController(ILogger<OpenController> logger, Config config)
+        public OpenController(ILogger<OpenController> logger, Config config) : base(logger, config)
         {
-            this._logger = logger;
-            this._config = config;
         }
 
         [HttpPost("map")]
         public FileMapResponse Map(FileMapRequest request)
         {
-            string? mapping = this._config.MapPath(request.Path);
+            GuestConfig config = this.GuestConfig(request);
+
+            string? mapping = config.MapPath(request.Path);
             return new FileMapResponse(mapping);
         }
 
         [HttpPost("open")]
         public HostResponse Post(OpenRequest openRequest)
         {
+            GuestConfig config = this.GuestConfig(openRequest);
+
             string? path = openRequest.Path;
 
             if (openRequest.Type == OpenPathType.Any)
@@ -41,7 +42,7 @@
 
             if (openRequest.Type == OpenPathType.File)
             {
-                path = this._config.MapPath(path);
+                path = config.MapPath(path);
             }
 
             OpenResponse response = new OpenResponse();
