@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using HagiShared.Network;
 using HostServer.Configuration;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -27,6 +27,7 @@ namespace HostServer
             services.AddSingleton<Config>();
             services.AddSingleton<Paths>();
 
+            services.AddSingleton<HostDetection>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,6 +45,11 @@ namespace HostServer
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
 
             app.ApplicationServices.GetRequiredService<Config>();
+
+            HostDetection hostDetection = app.ApplicationServices.GetRequiredService<HostDetection>();
+            lifetime.ApplicationStarted.Register(() => hostDetection.Listen());
+            lifetime.ApplicationStopping.Register(() => hostDetection.Stop());
+
         }
 
     }

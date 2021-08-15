@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
@@ -8,15 +9,25 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using CommandLine;
 using HagiShared.Api;
+using HagiShared.Network;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace GuestClient
 {
     class Program
     {
 
+        private static async Task GetHost()
+        {
+            HostDetection hostDetection = new HostDetection(new NullLogger<HostDetection>());
+            IPAddress ipAddress = await hostDetection.FindHost();
+            Console.WriteLine(ipAddress.ToString());
+        }
         static void Main(string[] args)
         {
 
+            Program.GetHost().Wait();
+            return;
             HostRequest? request = null;
 
             Parser.Default.ParseArguments<OpenRequest, FileMapRequest>(args)
