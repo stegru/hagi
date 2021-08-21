@@ -41,12 +41,16 @@ namespace HagiShared.Api
     public sealed class OptionAttribute : Attribute
     {
         public string Name { get; }
+        public bool Required { get; set; }
 
         public PropertyInfo PropertyInfo { get; set; } = null!;
+
+        public bool IsPayload { get; set; }
 
         public OptionAttribute(string name, bool required = false)
         {
             this.Name = name;
+            this.Required = required;
         }
     }
 }

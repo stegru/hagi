@@ -27,9 +27,8 @@ namespace GuestClient
         {
             RequestOptions? options = null;
 
-            Parser.Default.ParseArguments<OpenRequestOptions, FileMapRequestOptions>(args)
-                .WithParsed((OpenRequestOptions o) => options = o)
-                .WithParsed((FileMapRequestOptions o) => options = o);
+            Parser.Default.ParseArguments(args, RequestOptions.AllTypes)
+                .WithParsed(o => options = o as RequestOptions);
 
             if (options == null)
             {
@@ -41,7 +40,7 @@ namespace GuestClient
             options.Host ??= Config.Current["host"];
 
             Program.ResolvePaths(options);
-            Program.MakeRequest(options);
+            Program.MakeRequest(options).Wait();
         }
 
         private static void JoinHost(RequestOptions options)
@@ -50,7 +49,7 @@ namespace GuestClient
             {
             };
 
-            Program.MakeRequest(options, request);
+            Program.MakeRequest(options, request).Wait();
         }
 
 
@@ -72,7 +71,7 @@ namespace GuestClient
             }
         }
 
-        private static void MakeRequest(RequestOptions options, HostRequest? request = null)
+        private static async Task MakeRequest(RequestOptions options, HostRequest? request = null)
         {
             request ??= options.GetRequest();
             request.Guest ??= Config.Current["guest"];
@@ -83,10 +82,14 @@ namespace GuestClient
 
             HttpClient client = new HttpClient();
 
-            client.PostAsync(uri,
-                    new StringContent(JsonSerializer.Serialize(request, request.GetType()), Encoding.UTF8,
-                        "application/json"))
-                .Wait();
+            StringContent content = new StringContent(JsonSerializer.Serialize(request, request.GetType()), Encoding.UTF8,
+                "application/json");
+
+            Console.WriteLine(await content.ReadAsStringAsync());
+
+            HttpResponseMessage responseMessage = await client.PostAsync(uri, content);
+            string response = await responseMessage.Content.ReadAsStringAsync();
+            Console.WriteLine(response);
         }
 
 

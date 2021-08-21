@@ -6,6 +6,14 @@ namespace GuestClient
     using System;
     using HagiShared.Api;
 
+    public partial class RequestOptions {
+
+        public static Type[] AllTypes = {
+            typeof(FileMapRequestOptions),
+typeof(JoinRequestOptions),
+typeof(OpenRequestOptions)
+        };
+    }
 
 
 [CommandLine.Verb("filemap")]
@@ -13,11 +21,10 @@ namespace GuestClient
 public class FileMapRequestOptions : RequestOptions
 {
     public override string RequestUrl => "/hagi/map";
-      [CommandLine.Option("path")]
-      public String Path { get; set; }
-      [CommandLine.Option("guest")]
-      public String Guest { get; set; }
-
+            [CommandLine.Option("path")]
+        public String Path { get; set; }
+            [CommandLine.Option("guest")]
+        public String Guest { get; set; }
     public override HostRequest GetRequest() {
         FileMapRequest req = new FileMapRequest();
 
@@ -33,11 +40,10 @@ public class FileMapRequestOptions : RequestOptions
 public class JoinRequestOptions : RequestOptions
 {
     public override string RequestUrl => "/hagi/auth/join";
-      [CommandLine.Option("secret")]
-      public String SharedSecret { get; set; }
-      [CommandLine.Option("guest")]
-      public String Guest { get; set; }
-
+            [CommandLine.Option("secret")]
+        public String SharedSecret { get; set; }
+            [CommandLine.Option("guest")]
+        public String Guest { get; set; }
     public override HostRequest GetRequest() {
         JoinRequest req = new JoinRequest();
 
@@ -53,13 +59,12 @@ public class JoinRequestOptions : RequestOptions
 public class OpenRequestOptions : RequestOptions
 {
     public override string RequestUrl => "/hagi/open";
-      [CommandLine.Option("path")]
-      public String Path { get; set; }
-      [CommandLine.Option("type")]
-      public OpenPathType Type { get; set; }
-      [CommandLine.Option("guest")]
-      public String Guest { get; set; }
-
+            [CommandLine.Value(0)]
+        public String Path { get; set; }
+            [CommandLine.Option("type")]
+        public OpenPathType Type { get; set; }
+            [CommandLine.Option("guest")]
+        public String Guest { get; set; }
     public override HostRequest GetRequest() {
         OpenRequest req = new OpenRequest();
 

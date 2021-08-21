@@ -1,3 +1,4 @@
+@using System.Linq
 @using ClientCodeGen.Models
 @inherits ClientCodeGen.Templates.AllRequestsTemplate
 
@@ -8,6 +9,12 @@ namespace GuestClient
     using System;
     using HagiShared.Api;
 
+    public partial class RequestOptions {
+
+        public static Type[] AllTypes = {
+            @string.Join(",\n", this.AllRequests.Select(r => $"typeof({r.RequestType.Name}Options)"))
+        };
+    }
 @foreach (RequestModel requestModel in this.AllRequests)
 {
     this.Include<RequestTemplate>(requestModel);

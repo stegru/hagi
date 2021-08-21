@@ -3,9 +3,10 @@ using HagiShared.Api;
 
 namespace GuestClient
 {
-    public abstract class RequestOptions
+    public abstract partial class RequestOptions
     {
-        [CommandLine.Option("host")]
+
+        [CommandLine.Option("host", Required = true)]
         public string? Host { get; set; }
 
         [CommandLine.Option("config")]

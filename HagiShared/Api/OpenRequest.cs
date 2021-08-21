@@ -5,7 +5,7 @@ namespace HagiShared.Api
     [Request("open")]
     public class OpenRequest : HostRequest
     {
-        [Option("path")]
+        [Option("path", Required = true, IsPayload = true)]
         [JsonPropertyName("path")]
         public string Path { get; set; } = null!;
 
