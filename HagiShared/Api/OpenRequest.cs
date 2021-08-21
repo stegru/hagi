@@ -1,16 +1,15 @@
 using System.Text.Json.Serialization;
-using CommandLine;
 
 namespace HagiShared.Api
 {
-    [Verb("open", HelpText = "Opens a file or url on the host")]
+    [Request("open")]
     public class OpenRequest : HostRequest
     {
-        [Value(0)]
+        [Option("path")]
         [JsonPropertyName("path")]
         public string Path { get; set; } = null!;
 
-        [Option('t', "type")]
+        [Option("type")]
         public OpenPathType Type { get; set; }
     }
 

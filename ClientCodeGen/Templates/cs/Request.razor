@@ -1,0 +1,26 @@
+@using HagiShared.Api
+@inherits ClientCodeGen.Templates.RequestTemplate
+
+
+[CommandLine.Verb("@Model.Request.Name?.ToLowerInvariant()")]
+[Request("@Model.Request.Path")]
+public class @(Model.RequestType.Name)Options : RequestOptions
+{
+    public override string RequestUrl => "@Model.Request.Path";
+@foreach (OptionAttribute option in Model.Options)
+{
+    @:  [CommandLine.Option("@option.Name")]
+    @:  public @option.PropertyInfo.PropertyType.Name @option.PropertyInfo.Name { get; set; }
+}
+
+    public override HostRequest GetRequest() {
+        @Model.RequestType.Name req = new @(Model.RequestType.Name)();
+
+        @foreach (OptionAttribute option in Model.Options)
+        {
+            @:req.@option.PropertyInfo.Name = this.@option.PropertyInfo.Name;
+        }
+
+        return req;
+    }
+}

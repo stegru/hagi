@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GuestClient", "GuestClient\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HagiShared", "HagiShared\HagiShared.csproj", "{0EE58B6D-1541-4FA4-A57F-D839962EB400}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientCodeGen", "ClientCodeGen\ClientCodeGen.csproj", "{A94F7346-A8BE-44AF-863D-62CB67C9D61D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{0EE58B6D-1541-4FA4-A57F-D839962EB400}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EE58B6D-1541-4FA4-A57F-D839962EB400}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EE58B6D-1541-4FA4-A57F-D839962EB400}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A94F7346-A8BE-44AF-863D-62CB67C9D61D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A94F7346-A8BE-44AF-863D-62CB67C9D61D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A94F7346-A8BE-44AF-863D-62CB67C9D61D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A94F7346-A8BE-44AF-863D-62CB67C9D61D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

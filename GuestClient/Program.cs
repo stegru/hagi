@@ -25,54 +25,70 @@ namespace GuestClient
         }
         static void Main(string[] args)
         {
+            RequestOptions? options = null;
 
-            Program.GetHost().Wait();
-            return;
-            HostRequest? request = null;
+            Parser.Default.ParseArguments<OpenRequestOptions, FileMapRequestOptions>(args)
+                .WithParsed((OpenRequestOptions o) => options = o)
+                .WithParsed((FileMapRequestOptions o) => options = o);
 
-            Parser.Default.ParseArguments<OpenRequest, FileMapRequest>(args)
-                .WithParsed((OpenRequest req) => request = req)
-                .WithParsed((FileMapRequest req) => request = req);
-
-
-            if (request != null)
+            if (options == null)
             {
-                Program.ResolvePaths(request);
-                Program.MakeRequest(request).Wait();
+                return;
             }
+
+            Config.Load(options.ConfigFile);
+
+            options.Host ??= Config.Current["host"];
+
+            Program.ResolvePaths(options);
+            Program.MakeRequest(options);
         }
 
-        private static void ResolvePaths(HostRequest request)
+        private static void JoinHost(RequestOptions options)
         {
-            foreach (PropertyInfo propertyInfo in request.GetType()
+            JoinRequest request = new JoinRequest()
+            {
+            };
+
+            Program.MakeRequest(options, request);
+        }
+
+
+        private static void ResolvePaths(RequestOptions options)
+        {
+            foreach (PropertyInfo propertyInfo in options.GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .Where(pi => pi.CanWrite && pi.Name.EndsWith("Path") && pi.PropertyType == typeof(string)))
             {
-                string? path = propertyInfo.GetValue(request) as string;
+                string? path = propertyInfo.GetValue(options) as string;
                 if (!string.IsNullOrEmpty(path))
                 {
                     bool isUri = Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out Uri? uri);
                     if ((!isUri || uri?.IsFile == true) && !Path.IsPathRooted(path))
                     {
-                        propertyInfo.SetValue(request, Path.GetFullPath(path, Directory.GetCurrentDirectory()));
+                        propertyInfo.SetValue(options, Path.GetFullPath(path, Directory.GetCurrentDirectory()));
                     }
                 }
             }
         }
 
-        private static async Task MakeRequest(HostRequest request)
+        private static void MakeRequest(RequestOptions options, HostRequest? request = null)
         {
-            IRequestOptions options = ((IRequestOptions)request);
-            VerbAttribute verb = request.GetType().GetCustomAttribute<VerbAttribute>() ??
-                                 throw new InvalidOperationException("HostRequest without VerbAttribute");
+            request ??= options.GetRequest();
+            request.Guest ??= Config.Current["guest"];
 
             UriBuilder builder = new UriBuilder("http", options.Host, 5580);
-            builder.Path = $"hagi/{verb.Name}";
+            builder.Path = options.RequestUrl;
             Uri uri = builder.Uri;
 
             HttpClient client = new HttpClient();
 
-            await client.PostAsync(uri, new StringContent(JsonSerializer.Serialize(request, request.GetType()), Encoding.UTF8, "application/json"));
+            client.PostAsync(uri,
+                    new StringContent(JsonSerializer.Serialize(request, request.GetType()), Encoding.UTF8,
+                        "application/json"))
+                .Wait();
         }
+
+
     }
 }

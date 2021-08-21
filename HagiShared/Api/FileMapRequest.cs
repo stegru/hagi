@@ -1,11 +1,9 @@
-using CommandLine;
-
 namespace HagiShared.Api
 {
-    [Verb("map")]
+    [Request("map")]
     public class FileMapRequest : HostRequest
     {
-        [Value(0)]
+        [Option("path")]
         public string Path { get; set; } = null!;
     }
 

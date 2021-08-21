@@ -1,19 +1,11 @@
-using CommandLine;
-
 namespace HagiShared.Api
 {
-    public class HostRequest : IRequestOptions
+    public class HostRequest
     {
+        public const string RootPath = "/hagi/";
+
         [Option("guest")]
-        public string Guest { get; set; }
-
-        string? IRequestOptions.Host { get; set; }
-    }
-
-    public interface IRequestOptions
-    {
-        [Option("host")]
-        public string? Host { get; set; }
+        public string? Guest { get; set; }
     }
 
 }
