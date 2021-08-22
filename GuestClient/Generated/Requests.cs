@@ -6,73 +6,88 @@ namespace GuestClient
     using System;
     using HagiShared.Api;
 
-    public partial class RequestOptions {
+    public partial class RequestOptions
+    {
 
-        public static Type[] AllTypes = {
+        public static Type[] AllTypes =
+        {
             typeof(FileMapRequestOptions),
-typeof(JoinRequestOptions),
-typeof(OpenRequestOptions)
+            typeof(JoinRequestOptions),
+            typeof(OpenRequestOptions)
         };
     }
 
 
-[CommandLine.Verb("filemap")]
-[Request("/hagi/map")]
-public class FileMapRequestOptions : RequestOptions
-{
-    public override string RequestUrl => "/hagi/map";
-            [CommandLine.Option("path")]
+    [CommandLine.Verb("filemap")]
+    [Request("/hagi/map")]
+    public class FileMapRequestOptions : RequestOptions
+    {
+        public override string RequestUrl => "/hagi/map";
+
+        [CommandLine.Option("path")]
         public String Path { get; set; }
-            [CommandLine.Option("guest")]
+
+        [CommandLine.Option("guest")]
         public String Guest { get; set; }
-    public override HostRequest GetRequest() {
-        FileMapRequest req = new FileMapRequest();
+
+        public override HostRequest GetRequest()
+        {
+            FileMapRequest req = new FileMapRequest();
 
             req.Path = this.Path;
             req.Guest = this.Guest;
 
-        return req;
+            return req;
+        }
     }
-}
 
-[CommandLine.Verb("join")]
-[Request("/hagi/auth/join")]
-public class JoinRequestOptions : RequestOptions
-{
-    public override string RequestUrl => "/hagi/auth/join";
-            [CommandLine.Option("secret")]
+    [CommandLine.Verb("join")]
+    [Request("/hagi/auth/join")]
+    public class JoinRequestOptions : RequestOptions
+    {
+        public override string RequestUrl => "/hagi/auth/join";
+
+        [CommandLine.Option("secret")]
         public String SharedSecret { get; set; }
-            [CommandLine.Option("guest")]
+
+        [CommandLine.Option("guest")]
         public String Guest { get; set; }
-    public override HostRequest GetRequest() {
-        JoinRequest req = new JoinRequest();
+
+        public override HostRequest GetRequest()
+        {
+            JoinRequest req = new JoinRequest();
 
             req.SharedSecret = this.SharedSecret;
             req.Guest = this.Guest;
 
-        return req;
+            return req;
+        }
     }
-}
 
-[CommandLine.Verb("open")]
-[Request("/hagi/open")]
-public class OpenRequestOptions : RequestOptions
-{
-    public override string RequestUrl => "/hagi/open";
-            [CommandLine.Value(0)]
+    [CommandLine.Verb("open")]
+    [Request("/hagi/open")]
+    public class OpenRequestOptions : RequestOptions
+    {
+        public override string RequestUrl => "/hagi/open";
+
+        [CommandLine.Value(0)]
         public String Path { get; set; }
-            [CommandLine.Option("type")]
+
+        [CommandLine.Option("type")]
         public OpenPathType Type { get; set; }
-            [CommandLine.Option("guest")]
+
+        [CommandLine.Option("guest")]
         public String Guest { get; set; }
-    public override HostRequest GetRequest() {
-        OpenRequest req = new OpenRequest();
+
+        public override HostRequest GetRequest()
+        {
+            OpenRequest req = new OpenRequest();
 
             req.Path = this.Path;
             req.Type = this.Type;
             req.Guest = this.Guest;
 
-        return req;
+            return req;
+        }
     }
-}
 }

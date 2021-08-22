@@ -8,6 +8,9 @@ namespace HostServer.Controllers
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 
+    /// <summary>
+    /// Opens something on this machine.
+    /// </summary>
     [ApiController]
     [Route("hagi")]
     public class OpenController : HagiControllerBase

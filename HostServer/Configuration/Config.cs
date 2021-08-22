@@ -51,6 +51,11 @@ namespace HostServer.Configuration
             this.Logger.LogInformation("Loading config {file}", new { file = configFile });
             using TextReader reader = File.OpenText(configFile);
             JsonSerializer.Create().Populate(new JsonTextReader(reader), this);
+
+            if (this.GuestConfig.Count == 0)
+            {
+                this.GuestConfig["*"] = new GuestConfig();
+            }
         }
 
         public GuestConfig GetGuest(string guestId)
