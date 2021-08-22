@@ -26,6 +26,12 @@ namespace ClientCodeGen
 
         public async Task Generate()
         {
+            await this.GenerateCS();
+            await this.GenerateBash();
+        }
+
+        private async Task GenerateCS()
+        {
             GeneratorFactory generatorFactory = new GeneratorFactory(
                 Path.Combine(Program.GetSourceRootDir(), "Templates/cs"), typeof(AllRequestsTemplate).Namespace);
 
@@ -34,9 +40,24 @@ namespace ClientCodeGen
             string outputDir = Path.Combine(Program.GetSourceRootDir(), "../GuestClient/Generated");
             Directory.CreateDirectory(outputDir);
 
-
             await using TextWriter writer = new StreamWriter(Path.Combine(outputDir, "Requests.cs"));
             await generator.Generate(writer);
+
+        }
+
+        private async Task GenerateBash()
+        {
+            GeneratorFactory generatorFactory = new GeneratorFactory(
+                Path.Combine(Program.GetSourceRootDir(), "Templates/bash"), typeof(AllRequestsTemplate).Namespace);
+
+            AllRequestsTemplate generator = generatorFactory.GetGenerator<AllRequestsTemplate>();
+
+            string outputDir = Path.Combine(Program.GetSourceRootDir(), "../HostServer/Scripts");
+            Directory.CreateDirectory(outputDir);
+
+            await using TextWriter writer = new StreamWriter(Path.Combine(outputDir, "hagi-guest.sh"));
+            await generator.Generate(writer);
+
         }
     }
 }

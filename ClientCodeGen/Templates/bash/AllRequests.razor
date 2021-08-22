@@ -1,0 +1,310 @@
+#!/bin/bash
+# @*
+echo 'this is a template, not a script'
+exit
+
+: <<'IGNORE'
+*@
+
+@using System.Collections.Generic
+@using System.Linq
+@using System.Text
+@using ClientCodeGen.Models
+@using HagiShared.Api
+@inherits ClientCodeGen.Templates.AllRequestsTemplate
+@{
+  List<string> optionNames = new List<string>();
+  List<string> optionNamesValue = new List<string>();
+  foreach (OptionAttribute option in this.AllRequests.SelectMany(request => request.Options))
+  {
+    if (option.IsFlag)
+    {
+      optionNames.Add(option.Name);
+    }
+    else
+    {
+      optionNamesValue.Add(option.Name);
+    }
+  }
+}
+@*
+IGNORE
+#*@
+
+show_help() {
+  ACTION=$1
+  THIS=$(basename "$BASH_SOURCE")
+
+  case "$ACTION" in
+
+@{
+  Dictionary<string, string?> summaries = new Dictionary<string, string?>();
+
+  foreach (RequestModel request in this.AllRequests)
+  {
+    StringBuilder fullCommand = new StringBuilder(request.Request.NameLower);
+    StringBuilder shortCommand = new StringBuilder(request.Request.NameLower);
+
+    Dictionary<string, string?> options = new Dictionary<string, string?>();
+
+    foreach (OptionAttribute option in request.Options.OrderBy(o => !o.IsPayload).ThenBy(o => !o.Required))
+    {
+      fullCommand.Append(' ');
+      string optionText;
+      if (option.IsPayload)
+      {
+        optionText = $"<{option.Name}>";
+        shortCommand.Append($" {optionText}");
+      }
+      else if (option.IsFlag)
+      {
+        optionText = $"--{option.Name}";
+      }
+      else
+      {
+        optionText = $"--{option.Name} <{option.Name}>";
+      }
+
+      fullCommand.Append(option.Required ? optionText : $"[{optionText}]");
+
+      options[optionText] = option.Info;
+    }
+
+    summaries[shortCommand.ToString()] = request.Request.Info;
+
+    string endMarker = $"end_{request.Request.NameLower}";
+
+    <text>
+      @request.Request.NameLower)
+        sed "s/%THIS%/$THIS/g" << '@endMarker'
+%THIS% @request.Request.NameLower
+
+  @request.Request.Info
+
+usage: %THIS% @fullCommand.ToString()
+
+      @{
+
+        int width = options.Keys.Max(k => k.Length) + 2;
+        foreach ((string option, string? info) in options)
+        {
+          this.WriteLiteral(string.IsNullOrEmpty(info)
+            ? $"  {option}\n"
+            : $"  {option.PadRight(width)} {info}\n");
+        }
+        this.WriteLiteral($"\n{endMarker}\n");
+      }
+      ;;
+    </text>
+  }
+}
+    *)
+      sed "s/%THIS%/$THIS/g" << '_help'
+usage: %THIS% @("<action>") [options]
+
+Actions:
+@{
+  int actionWidth = summaries.Keys.Max(k => k.Length) + 2;
+  foreach ((string action, string? info) in summaries)
+  {
+    this.WriteLiteral(string.IsNullOrEmpty(info)
+      ? $"   {action}\n"
+      : $"   {action.PadRight(actionWidth)} {info}\n");
+  }
+}
+
+For information on each action: %THIS% @("<action>") --help
+      @{ this.WriteLiteral("\n_help\n"); }
+
+    ;;
+  esac
+
+  cat << '_help_options'
+General options:
+
+--help           Show this information.
+@("--config <file>  Show this information.")
+
+_help_options
+}
+
+
+REQUEST_OPTION_NAMES='@string.Join(' ', optionNames.Distinct())'
+REQUEST_OPTION_NAMES_VALUE='@string.Join(' ', optionNamesValue.Distinct())'
+
+OPTION_NAMES="help $REQUEST_OPTION_NAMES"
+OPTION_NAMES_VALUE="$REQUEST_OPTION_NAMES_VALUE"
+
+OPTION_NAMES_ALL="$OPTION_NAMES $OPTION_NAMES_VALUE"
+
+## Parse the command-line options
+
+unset PARAMS
+declare -A PARAMS
+EXTRA=()
+
+while [[ $# -gt 0 ]]; do
+
+  CURRENT="$1"
+  shift
+
+  if [[ "$CURRENT" == --* ]]; then
+    # It's an option
+    NAME=${CURRENT#--}
+
+    if [[ $NAME =~ = ]]; then
+      # --option=value
+      VALUE="${NAME#*=}"
+      NAME="${NAME%=*}"
+
+      if ! [[ " $OPTION_NAMES_ALL " =~ ' '$NAME' ' ]]; then
+        echo "error: $CURRENT is unknown"
+        exit
+      fi
+
+    elif [[ " $OPTION_NAMES_VALUE " =~ ' '$NAME' ' ]]; then
+      # --option value
+      VALUE="$1"
+      shift
+
+      if [[ "$VALUE" == --* ]] || [ -z "$VALUE" ]; then
+        echo "error: $CURRENT has no value"
+        exit
+      fi
+    elif [[ " $OPTION_NAMES " =~ ' '$NAME' ' ]]; then
+      # --option
+      VALUE=1
+    else
+      echo "error: $CURRENT is unknown"
+      exit
+      VALUE=
+    fi
+
+    declare "OPTION_${NAME}=$VALUE"
+    PARAMS[$NAME]="$VALUE"
+
+  else
+    # Not an option
+    EXTRA+=("$CURRENT")
+  fi
+
+done
+
+# Re-apply the non-options to the command line
+set -- "${EXTRA[@@]}"
+
+COMMAND=$1
+shift
+
+if [ -n "${PARAMS[help]}" ]; then
+  show_help $COMMAND
+  exit
+fi
+
+FIELDS=()
+
+add_field() {
+  NAME=$1
+  # types: str, bool, int
+  TYPE=$2
+  REQUIRED=$3
+
+  if ! [ ${PARAMS[$NAME]+1} ]; then
+    if [ "$REQUIRED" == 1 ]; then
+      echo "$NAME is required"
+      exit 1
+    fi
+    return
+  fi
+
+  VALUE="${PARAMS[$NAME]}"
+  case $TYPE in
+    bool)
+      if [[ "$VALUE" = "false" ]] || [[ "$VALUE" = "0" ]] || [[ -z "$VALUE" ]]; then
+        VALUE=false
+      else
+        VALUE=true
+      fi
+      ;;
+    int)
+      if echo -n "$VALUE" | grep -q '[^0-9]'; then
+        echo "$NAME: '$VALUE' is not a number"
+        exit
+      fi
+
+      if [ -z "$VALUE" ]; then
+        VALUE=0
+      fi
+
+      ;;
+    str)
+      VALUE="\"$VALUE\""
+      ;;
+  esac
+
+  FIELDS+=("\"$NAME\": $VALUE")
+}
+
+case "$COMMAND" in
+
+@foreach (RequestModel request in this.AllRequests)
+{
+  <text>
+    @request.Request.NameLower)
+     URL_PATH='@request.Request.Path'
+    @foreach (OptionAttribute option in request.Options)
+    {
+      string type = option.PropertyInfo.PropertyType == typeof(int)
+        ? "int"
+        : option.PropertyInfo.PropertyType == typeof(bool)
+          ? "bool"
+          : "str";
+
+      @:add_field @option.Name @type @(option.Required ? "1" : "")
+    }
+    ;;
+  </text>
+}
+esac
+
+[ -z "$URL_PATH" ] && exit
+
+DATA="{$(IFS=, ; echo "${FIELDS[*]}")}"
+
+SCHEMA="http://"
+HOST="127.0.0.1:5580"
+URL="${SCHEMA}${HOST}${URL_PATH}"
+
+RESPONSE_FILE=$(mktemp)
+RESPONSE_CODE=$(
+  curl --request POST "$URL" \
+    --header 'Content-Type: application/json' \
+    --data-raw "$DATA" \
+    --silent --show-error \
+    --write-out "%{response_code}" \
+    --output "$RESPONSE_FILE"
+)
+
+RESULT=$?
+
+RESPONSE=$(cat "$RESPONSE_FILE")
+rm "$RESPONSE_FILE"
+
+SUCCESS=0
+if [ "$RESULT" != "0" ]; then
+  echo curl failure
+  exit
+elif [ "$RESPONSE_CODE" != 200 ]; then
+  echo "http response code $RESPONSE_CODE"
+  echo "$RESPONSE"
+
+else
+  echo ok
+  SUCCESS=1
+fi
+
+
+if [ "$SUCCESS" == 0 ]; then
+  exit 1
+fi
+

@@ -1,6 +1,6 @@
 namespace HagiShared.Api
 {
-    [Request("auth/join")]
+    [Request("auth/join", Info = "Join the host.")]
     public class JoinRequest : HostRequest
     {
         [Option("secret")]

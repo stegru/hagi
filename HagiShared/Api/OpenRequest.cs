@@ -2,10 +2,10 @@ using System.Text.Json.Serialization;
 
 namespace HagiShared.Api
 {
-    [Request("open")]
+    [Request("open", Info = "Opens a file on the host.")]
     public class OpenRequest : HostRequest
     {
-        [Option("path", Required = true, IsPayload = true)]
+        [Option("path", Info = "A url or a path on the guest.", Required = true, IsPayload = true)]
         [JsonPropertyName("path")]
         public string Path { get; set; } = null!;
 

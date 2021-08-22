@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace HagiShared.Api
 {
@@ -7,6 +8,8 @@ namespace HagiShared.Api
     public sealed class RequestAttribute : Attribute
     {
         private string? _name;
+
+        public string? NameLower => this.Name?.ToLowerInvariant();
 
         public string? Name
         {
@@ -28,6 +31,8 @@ namespace HagiShared.Api
 
         public Type? RequestType { get; set; }
 
+        public string? Info { get; set; }
+
         public RequestAttribute(string path, string? name = null)
         {
             this._name = name;
@@ -40,16 +45,25 @@ namespace HagiShared.Api
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class OptionAttribute : Attribute
     {
+        private bool? _isFlag;
         public string Name { get; }
+        public string? Info { get; set; }
         public bool Required { get; set; }
+
+        public bool IsFlag
+        {
+            get => this._isFlag == null ? this.PropertyInfo.PropertyType == typeof(bool) : this._isFlag == true;
+            set => this._isFlag = value;
+        }
 
         public PropertyInfo PropertyInfo { get; set; } = null!;
 
         public bool IsPayload { get; set; }
 
-        public OptionAttribute(string name, bool required = false)
+        public OptionAttribute(string name, string? info = null, bool required = false)
         {
             this.Name = name;
+            this.Info = info;
             this.Required = required;
         }
     }
