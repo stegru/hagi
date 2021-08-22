@@ -2,9 +2,7 @@
 
 namespace HostServer.Controllers
 {
-    using System;
     using HagiShared.Api;
-    using HagiShared.System;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 

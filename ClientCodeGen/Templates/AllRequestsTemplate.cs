@@ -41,7 +41,7 @@ namespace ClientCodeGen.Templates
                     foreach (PropertyInfo propertyInfo in type.GetProperties())
                     {
                         OptionAttribute? optionAttribute = propertyInfo.GetCustomAttribute<OptionAttribute>();
-                        if (optionAttribute != null)
+                        if (optionAttribute is { Hide: false })
                         {
                             optionAttribute.PropertyInfo = propertyInfo;
                             requestModel.Options.Add(optionAttribute);

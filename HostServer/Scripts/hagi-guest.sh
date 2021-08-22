@@ -37,6 +37,37 @@ usage: %THIS% join [--secret <secret>] [--guest <guest>]
 end_join
       ;;
     
+      message)
+        sed "s/%THIS%/$THIS/g" << 'end_message'
+%THIS% message
+
+  Displays a message.
+
+usage: %THIS% message [--message <message>] [--title <title>] [--dialog] [--guest <guest>]
+
+  --message <message>   The message text.
+  --title <title>       The message text.
+  --dialog              Show a dialog, rather than a notification.
+  --guest <guest>       The guest ID.
+
+end_message
+      ;;
+    
+      ask)
+        sed "s/%THIS%/$THIS/g" << 'end_ask'
+%THIS% ask
+
+  Displays a dialog message, asking a yes or no question.
+
+usage: %THIS% ask [--message <message>] [--title <title>] [--guest <guest>]
+
+  --message <message>   The message text.
+  --title <title>       The message text.
+  --guest <guest>       The guest ID.
+
+end_ask
+      ;;
+    
       open)
         sed "s/%THIS%/$THIS/g" << 'end_open'
 %THIS% open
@@ -58,6 +89,8 @@ usage: %THIS% <action> [options]
 Actions:
    filemap
    join          Join the host.
+   message       Displays a message.
+   ask           Displays a dialog message, asking a yes or no question.
    open <path>   Opens a file on the host.
 
 For information on each action: %THIS% <action> --help
@@ -78,8 +111,8 @@ _help_options
 
 
 
-REQUEST_OPTION_NAMES=''
-REQUEST_OPTION_NAMES_VALUE='path guest secret type'
+REQUEST_OPTION_NAMES='dialog'
+REQUEST_OPTION_NAMES_VALUE='path guest secret message title type'
 
 OPTION_NAMES="help $REQUEST_OPTION_NAMES"
 OPTION_NAMES_VALUE="$REQUEST_OPTION_NAMES_VALUE"
@@ -213,6 +246,21 @@ case "$COMMAND" in
     join)
      URL_PATH='/hagi/auth/join'
       add_field secret str 0 0
+      add_field guest str 0 0
+    ;;
+  
+    message)
+     URL_PATH='/hagi/message/show'
+      add_field message str 0 0
+      add_field title str 0 0
+      add_field dialog bool 0 0
+      add_field guest str 0 0
+    ;;
+  
+    ask)
+     URL_PATH='/hagi/message/ask'
+      add_field message str 0 0
+      add_field title str 0 0
       add_field guest str 0 0
     ;;
   

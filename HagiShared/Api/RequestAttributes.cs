@@ -1,9 +1,11 @@
 using System;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace HagiShared.Api
 {
+    /// <summary>
+    /// Describes a request
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class RequestAttribute : Attribute
     {
@@ -42,6 +44,9 @@ namespace HagiShared.Api
         }
     }
 
+    /// <summary>
+    /// Describes a field in a request.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
     public sealed class OptionAttribute : Attribute
     {
@@ -49,6 +54,7 @@ namespace HagiShared.Api
         public string Name { get; }
         public string? Info { get; set; }
         public bool Required { get; set; }
+        public bool Hide { get; set; }
 
         public bool IsFlag
         {
