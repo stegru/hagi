@@ -77,6 +77,7 @@ _help_options
 }
 
 
+
 REQUEST_OPTION_NAMES=''
 REQUEST_OPTION_NAMES_VALUE='path guest secret type'
 
@@ -156,13 +157,20 @@ add_field() {
   # types: str, bool, int
   TYPE=$2
   REQUIRED=$3
+  ANON=$4
 
   if ! [ ${PARAMS[$NAME]+1} ]; then
-    if [ "$REQUIRED" == 1 ]; then
-      echo "$NAME is required"
-      exit 1
+
+    if [ "$ANON" == 1 ] && [ "$1" != "" ]; then
+      PARAMS[$NAME]=$1
+      shift
+    else
+      if [ "$REQUIRED" == 1 ]; then
+        echo "$NAME is required"
+        exit 1
+      fi
+      return
     fi
-    return
   fi
 
   VALUE="${PARAMS[$NAME]}"
@@ -198,21 +206,21 @@ case "$COMMAND" in
 
     filemap)
      URL_PATH='/hagi/map'
-      add_field path str 
-      add_field guest str 
+      add_field path str 0 0
+      add_field guest str 0 0
     ;;
   
     join)
      URL_PATH='/hagi/auth/join'
-      add_field secret str 
-      add_field guest str 
+      add_field secret str 0 0
+      add_field guest str 0 0
     ;;
   
     open)
      URL_PATH='/hagi/open'
-      add_field path str 1
-      add_field type str 
-      add_field guest str 
+      add_field path str 1 1
+      add_field type str 0 0
+      add_field guest str 0 0
     ;;
   esac
 

@@ -27,9 +27,6 @@ exit
     }
   }
 }
-@*
-IGNORE
-#*@
 
 show_help() {
   ACTION=$1
@@ -128,6 +125,10 @@ General options:
 _help_options
 }
 
+@*
+IGNORE
+#*@
+
 
 REQUEST_OPTION_NAMES='@string.Join(' ', optionNames.Distinct())'
 REQUEST_OPTION_NAMES_VALUE='@string.Join(' ', optionNamesValue.Distinct())'
@@ -208,13 +209,20 @@ add_field() {
   # types: str, bool, int
   TYPE=$2
   REQUIRED=$3
+  ANON=$4
 
   if ! [ ${PARAMS[$NAME]+1} ]; then
-    if [ "$REQUIRED" == 1 ]; then
-      echo "$NAME is required"
-      exit 1
+
+    if [ "$ANON" == 1 ] && [ "$1" != "" ]; then
+      PARAMS[$NAME]=$1
+      shift
+    else
+      if [ "$REQUIRED" == 1 ]; then
+        echo "$NAME is required"
+        exit 1
+      fi
+      return
     fi
-    return
   fi
 
   VALUE="${PARAMS[$NAME]}"
@@ -260,7 +268,7 @@ case "$COMMAND" in
           ? "bool"
           : "str";
 
-      @:add_field @option.Name @type @(option.Required ? "1" : "")
+      @:add_field @option.Name @type @(option.Required ? "1" : "0") @(option.IsPayload ? "1" : "0")
     }
     ;;
   </text>
