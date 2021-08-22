@@ -5,7 +5,7 @@ namespace HagiShared.Api
         public const string RootPath = "/hagi/";
 
         [Option("guest", Info = "The guest ID.")]
-        public string? Guest { get; set; }
+        public virtual string Guest { get; set; } = null!;
     }
 
 }

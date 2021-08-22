@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -52,15 +51,26 @@ namespace HostServer.Configuration
             using TextReader reader = File.OpenText(configFile);
             JsonSerializer.Create().Populate(new JsonTextReader(reader), this);
 
-            if (this.GuestConfig.Count == 0)
+            if (!this.GuestConfig.ContainsKey("*"))
             {
                 this.GuestConfig["*"] = new GuestConfig();
             }
+
+            foreach ((string key, GuestConfig guestConfig) in this.GuestConfig)
+            {
+                guestConfig.GuestId = key;
+            }
+
         }
 
-        public GuestConfig GetGuest(string guestId)
+        /// <summary>
+        /// Gets configuration for a guest.
+        /// </summary>
+        public GuestConfig GetGuest(string guestId = "*")
         {
-            return this.GuestConfig.Values.First();
+            return this.GuestConfig.TryGetValue(guestId, out GuestConfig? guestConfig)
+                ? guestConfig
+                : this.GuestConfig["*"];
         }
     }
 

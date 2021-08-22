@@ -15,12 +15,11 @@ namespace HostServer.Controllers
         }
 
         [HttpPost("join")]
-        public FileMapResponse Join(FileMapRequest request)
+        public JoinResponse Join(JoinRequest request)
         {
             GuestConfig config = this.GuestConfig(request);
 
-            string? mapping = config.MapPath(request.Path);
-            return new FileMapResponse(mapping);
+            return new JoinResponse(request.Guest);
         }
     }
 }

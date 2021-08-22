@@ -4,7 +4,7 @@ namespace HagiShared.Api
     public class JoinRequest : HostRequest
     {
         [Option("secret")]
-        public string SharedSecret { get; set; } = null!;
+        public string? SharedSecret { get; set; }
     }
 
     public class JoinResponse : HostResponse

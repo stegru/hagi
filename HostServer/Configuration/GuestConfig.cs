@@ -1,10 +1,11 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-
 namespace HostServer.Configuration
 {
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Runtime.Serialization;
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Configuration for a guest.
     /// </summary>
@@ -13,6 +14,11 @@ namespace HostServer.Configuration
         public Dictionary<string, string> PathMappings { get; set; } = null!;
 
         private List<PathMapping> guestPaths = null!;
+
+        [JsonIgnore]
+        internal bool IsDefault => this.GuestId == "*";
+
+        internal string GuestId { get; set; } = null!;
 
 
         [OnDeserialized]
