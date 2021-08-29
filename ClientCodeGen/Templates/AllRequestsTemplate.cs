@@ -3,12 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using ClientCodeGen.Models;
-using ClientCodeGen.TemplateEngine;
 using HagiShared.Api;
 
 namespace ClientCodeGen.Templates
 {
-    [TemplateFile("AllRequests.razor")]
     public class AllRequestsTemplate : BaseTemplate<object>
     {
         protected List<RequestModel> AllRequests { get; private set; } = null!;
@@ -21,6 +19,11 @@ namespace ClientCodeGen.Templates
 
         private List<RequestModel> GetAllRequests()
         {
+            if (this.Model is List<RequestModel> r)
+            {
+                return r;
+            }
+
             List<RequestModel> requests = new List<RequestModel>();
 
             foreach (Type type in typeof(HostRequest).Assembly.GetTypes())

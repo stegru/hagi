@@ -2,10 +2,12 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ClientCodeGen.TemplateEngine;
-using ClientCodeGen.Templates;
 
 namespace ClientCodeGen
 {
+    using cs = ClientCodeGen.Templates.cs;
+    using bash = ClientCodeGen.Templates.bash;
+
     class Program
     {
         static void Main(string[] args)
@@ -25,16 +27,16 @@ namespace ClientCodeGen
 
         public async Task Generate()
         {
-            await this.GenerateCS();
+            //await this.GenerateCS();
             await this.GenerateBash();
         }
 
         private async Task GenerateCS()
         {
             GeneratorFactory generatorFactory = new GeneratorFactory(
-                Path.Combine(Program.GetSourceRootDir(), "Templates/cs"), typeof(AllRequestsTemplate).Namespace);
+                Path.Combine(Program.GetSourceRootDir(), "Templates/cs"), typeof(cs.RequestOptionsTemplate).Namespace);
 
-            AllRequestsTemplate generator = generatorFactory.GetGenerator<AllRequestsTemplate>();
+            Templates.AllRequestsTemplate generator = generatorFactory.GetGenerator<cs.RequestOptionsTemplate>();
 
             string outputDir = Path.Combine(Program.GetSourceRootDir(), "../GuestClient/Generated");
             Directory.CreateDirectory(outputDir);
@@ -47,9 +49,9 @@ namespace ClientCodeGen
         private async Task GenerateBash()
         {
             GeneratorFactory generatorFactory = new GeneratorFactory(
-                Path.Combine(Program.GetSourceRootDir(), "Templates/bash"), typeof(AllRequestsTemplate).Namespace);
+                Path.Combine(Program.GetSourceRootDir(), "Templates/bash"), typeof(bash.GuestScriptTemplate).Namespace);
 
-            AllRequestsTemplate generator = generatorFactory.GetGenerator<AllRequestsTemplate>();
+            Templates.AllRequestsTemplate generator = generatorFactory.GetGenerator<bash.GuestScriptTemplate>();
 
             string outputDir = Path.Combine(Program.GetSourceRootDir(), "../HostServer/Scripts");
             Directory.CreateDirectory(outputDir);

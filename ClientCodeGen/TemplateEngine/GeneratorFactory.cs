@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Emit;
 
 namespace ClientCodeGen.TemplateEngine
 {
+    using System.Text.RegularExpressions;
+
     /// <summary>
     /// Generates code generators, which are compiled razor templates.
     /// </summary>
@@ -55,29 +57,42 @@ namespace ClientCodeGen.TemplateEngine
         public T GetGenerator<T>()
             where T : Generator
         {
-            if (!this._generators.TryGetValue(typeof(T), out Generator? generator))
+            return (T)this.GetGenerator(typeof(T));
+        }
+
+        /// <summary>
+        /// Get the code generator (compiled razor template) of the given type.
+        /// </summary>
+        /// <param name="generatorType">Type of code generator.</param>
+        /// <returns>The generator.</returns>
+        public Generator GetGenerator(Type generatorType)
+        {
+            if (!this._generators.TryGetValue(generatorType, out Generator? generator))
             {
-                generator = this.CreateGenerator<T>();
-                this._generators[typeof(T)] = generator;
+                generator = this.CreateGenerator(generatorType);
+                this._generators[generatorType] = generator;
             }
 
-            return (T)generator;
+            return generator;
         }
 
         /// <summary>Create the generator.</summary>
-        private T CreateGenerator<T>()
-            where T : Generator
+        private Generator CreateGenerator(Type generatorType, string? razorFile = null)
         {
-            string filename = typeof(T).GetCustomAttribute<TemplateFileAttribute>()?.Filename
-                              ?? throw new ApplicationException(
-                                  $"Type {typeof(T).Name} does not have a template file");
+            razorFile ??= generatorType.GetCustomAttribute<TemplateFileAttribute>()?.Filename;
 
-            string templatePath = Path.Combine(this._templatePath, filename);
+            if (razorFile == null)
+            {
+                string name = Regex.Replace(generatorType.Name, "Template$", "");
+                razorFile = $"{name}.razor";
+            }
+
+            string templatePath = Path.Combine(this._templatePath, razorFile);
 
             // Generate the C# code for the razor template.
             RazorProjectItem item = this._fileSystem.GetItem(templatePath, FileKinds.Legacy);
 
-            string className = typeof(T).Name + "_generator";
+            string className = generatorType.Name + "_generator";
             this._classNames[item.PhysicalPath] = className;
 
             string csCode = this._engine.Process(item).GetCSharpDocument().GeneratedCode;
@@ -122,7 +137,7 @@ namespace ClientCodeGen.TemplateEngine
             Type type = assembly.GetType(typeName)
                         ?? throw new ApplicationException($"Unable to load generated type '{typeName}'");
 
-            T generator = (T?)Activator.CreateInstance(type)
+            Generator generator = (Generator?)Activator.CreateInstance(type)
                           ?? throw new ApplicationException($"Unable to instantiate generated type '{typeName}'");
 
             generator.Initialise(this, templatePath);
