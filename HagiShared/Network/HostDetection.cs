@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 
 namespace HagiShared.Network
 {
@@ -16,11 +15,9 @@ namespace HagiShared.Network
 
         private readonly byte[] _detectionRequest = Encoding.UTF8.GetBytes(HostDetection.DetectionRequestString);
         private readonly byte[] _detectionReply = Encoding.UTF8.GetBytes(HostDetection.DetectionReplyString);
-        private readonly ILogger<HostDetection> _logger;
 
-        public HostDetection(ILogger<HostDetection> logger)
+        public HostDetection()
         {
-            this._logger = logger;
         }
 
         /// <summary>
@@ -51,8 +48,6 @@ namespace HagiShared.Network
         /// </summary>
         public async Task Listen(int port = 5580)
         {
-            this._logger.Log(LogLevel.Information, "Listening");
-
             TaskCompletionSource<bool> taskCompletionSource = new TaskCompletionSource<bool>();
 
             if (this._listenCancellation == null)
@@ -62,7 +57,6 @@ namespace HagiShared.Network
             else
             {
                 string message = $"{nameof(this.Listen)} called twice";
-                this._logger.LogError(message);
                 throw new InvalidOperationException(message);
             }
 
@@ -86,8 +80,6 @@ namespace HagiShared.Network
 
                 UdpReceiveResult udpResult = dataTask.Result;
 
-                this._logger.Log(LogLevel.Debug, "Data from {src}", new { src = udpResult.RemoteEndPoint });
-
                 bool isDetection = udpResult.Buffer.Take(this._detectionRequest.Length)
                     .SequenceEqual(this._detectionRequest);
 
@@ -96,7 +88,7 @@ namespace HagiShared.Network
                     IPAddress? localAddress = await this.GetLocalAddress(udpResult.RemoteEndPoint.Address);
                     if (localAddress != null)
                     {
-                        byte[] reply = this._detectionReply;//.Concat(localAddress.GetAddressBytes()).ToArray();
+                        byte[] reply = this._detectionReply.Concat(localAddress.GetAddressBytes()).ToArray();
                         await udpClient.SendAsync(reply, reply.Length, udpResult.RemoteEndPoint);
                     }
                 }

@@ -49,7 +49,12 @@ namespace HostServer.Configuration
             string path = this.GetPath(appPath, filename);
             if (!File.Exists(path))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                string? directoryName = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(directoryName))
+                {
+                    Directory.CreateDirectory(directoryName);
+                }
+
                 string defaultPath = this.GetPath(AppPath.DefaultConfig, filename);
                 File.Copy(defaultPath, path);
             }

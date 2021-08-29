@@ -8,7 +8,7 @@ namespace GuestClient
 
     public partial class RequestOptions {
 
-        public static Type[] AllTypes = {
+        private static Type[] GeneratedTypes = {
             typeof(FileMapRequestOptions),
 typeof(JoinRequestOptions),
 typeof(MessageRequestOptions),
@@ -18,109 +18,102 @@ typeof(OpenRequestOptions)
     }
 
 
-[CommandLine.Verb("filemap")]
+[CommandLine.Verb("filemap", HelpText = "")]
 [Request("/hagi/map")]
 public class FileMapRequestOptions : RequestOptions
 {
     public override string RequestUrl => "/hagi/map";
-            [CommandLine.Option("path")]
+
+        [CommandLine.Option("path", HelpText = "", Hidden = false, Required = false, MetaValue = "<path>")]
         public String Path { get; set; }
-            [CommandLine.Option("guest")]
-        public String Guest { get; set; }
+
     public override HostRequest GetRequest() {
-        FileMapRequest req = new FileMapRequest();
-
-            req.Path = this.Path;
-            req.Guest = this.Guest;
-
+        FileMapRequest req = new FileMapRequest() {
+            Path = this.Path,
+        };
         return req;
     }
 }
 
-[CommandLine.Verb("join")]
+[CommandLine.Verb("join", HelpText = "Join the host.")]
 [Request("/hagi/auth/join")]
 public class JoinRequestOptions : RequestOptions
 {
     public override string RequestUrl => "/hagi/auth/join";
-            [CommandLine.Option("secret")]
-        public String SharedSecret { get; set; }
-            [CommandLine.Option("guest")]
+
+        [CommandLine.Option("guest", HelpText = "The guest ID.", Hidden = false, Required = false, MetaValue = "<guest>")]
         public String Guest { get; set; }
+        [CommandLine.Option("secret", HelpText = "", Hidden = false, Required = false, MetaValue = "<secret>")]
+        public String SharedSecret { get; set; }
+
     public override HostRequest GetRequest() {
-        JoinRequest req = new JoinRequest();
-
-            req.SharedSecret = this.SharedSecret;
-            req.Guest = this.Guest;
-
+        JoinRequest req = new JoinRequest() {
+            Guest = this.Guest,
+            SharedSecret = this.SharedSecret,
+        };
         return req;
     }
 }
 
-[CommandLine.Verb("message")]
+[CommandLine.Verb("message", HelpText = "Displays a message.")]
 [Request("/hagi/message/show")]
 public class MessageRequestOptions : RequestOptions
 {
     public override string RequestUrl => "/hagi/message/show";
-            [CommandLine.Option("message")]
+
+        [CommandLine.Option("message", HelpText = "The message text.", Hidden = false, Required = false, MetaValue = "<message>")]
         public String Message { get; set; }
-            [CommandLine.Option("title")]
+        [CommandLine.Option("title", HelpText = "The message title.", Hidden = false, Required = false, MetaValue = "<title>")]
         public String Title { get; set; }
-            [CommandLine.Option("dialog")]
+        [CommandLine.Option("dialog", HelpText = "Show a dialog, rather than a notification.", Hidden = false, Required = false, MetaValue = "")]
         public Boolean Dialog { get; set; }
-            [CommandLine.Option("guest")]
-        public String Guest { get; set; }
+
     public override HostRequest GetRequest() {
-        MessageRequest req = new MessageRequest();
-
-            req.Message = this.Message;
-            req.Title = this.Title;
-            req.Dialog = this.Dialog;
-            req.Guest = this.Guest;
-
+        MessageRequest req = new MessageRequest() {
+            Message = this.Message,
+            Title = this.Title,
+            Dialog = this.Dialog,
+        };
         return req;
     }
 }
 
-[CommandLine.Verb("ask")]
+[CommandLine.Verb("ask", HelpText = "Displays a dialog message, asking a yes or no question.")]
 [Request("/hagi/message/ask")]
 public class AskRequestOptions : RequestOptions
 {
     public override string RequestUrl => "/hagi/message/ask";
-            [CommandLine.Option("message")]
+
+        [CommandLine.Option("message", HelpText = "The message text.", Hidden = false, Required = false, MetaValue = "<message>")]
         public String Message { get; set; }
-            [CommandLine.Option("title")]
+        [CommandLine.Option("title", HelpText = "The message title.", Hidden = false, Required = false, MetaValue = "<title>")]
         public String Title { get; set; }
-            [CommandLine.Option("guest")]
-        public String Guest { get; set; }
+
     public override HostRequest GetRequest() {
-        AskRequest req = new AskRequest();
-
-            req.Message = this.Message;
-            req.Title = this.Title;
-            req.Guest = this.Guest;
-
+        AskRequest req = new AskRequest() {
+            Message = this.Message,
+            Title = this.Title,
+        };
         return req;
     }
 }
 
-[CommandLine.Verb("open")]
+[CommandLine.Verb("open", HelpText = "Opens a file on the host.")]
 [Request("/hagi/open")]
 public class OpenRequestOptions : RequestOptions
 {
     public override string RequestUrl => "/hagi/open";
-            [CommandLine.Value(0)]
+
+        [CommandLine.Value(0, HelpText = "A url or a path on the guest.", Hidden = false, Required = true, MetaValue = "<path>")]
         public String Path { get; set; }
-            [CommandLine.Option("type")]
+        [CommandLine.Option("type", HelpText = "", Hidden = false, Required = false, MetaValue = "<type>")]
         public OpenPathType Type { get; set; }
-            [CommandLine.Option("guest")]
-        public String Guest { get; set; }
+
     public override HostRequest GetRequest() {
-        OpenRequest req = new OpenRequest();
-
-            req.Path = this.Path;
-            req.Type = this.Type;
-            req.Guest = this.Guest;
-
+        OpenRequest req = new OpenRequest() {
+            Path = this.Path,
+            Type = this.Type,
+        };
         return req;
     }
 }

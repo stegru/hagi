@@ -18,6 +18,10 @@
                 case "BuildRequest":
                     this.Include<BuildRequestTemplate>(this.AllRequests);
                     break;
+
+                case "OptionNames":
+                    this.Include<OptionNamesTemplate>(this.AllRequests);
+                    break;
             }
         }
         else

@@ -33,11 +33,7 @@ namespace ClientCodeGen.Templates
                 if (requestAttribute != null)
                 {
                     requestAttribute.RequestType = type;
-                    RequestModel requestModel = new RequestModel()
-                    {
-                        Request = requestAttribute,
-                        RequestType = type,
-                    };
+                    RequestModel requestModel = new RequestModel(requestAttribute, type);
 
                     requests.Add(requestModel);
 

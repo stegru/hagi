@@ -1,12 +1,33 @@
 #!/bin/bash
-# 
 
+CONFIG_FILE=~/.config/hagi-guest/guest.conf
 
+# Output general help text
 show_help() {
-  ACTION=$1
+  ACTION="$1"
+  THIS=$(basename "$BASH_SOURCE")
+
+  show_action_help "$ACTION"
+
+  if [ -z "$ACTION" ]; then
+    cat << '_help_options'
+General options:
+
+  --help             Show basic command help.
+  --help <action>    Show help on a specific action.
+  --help-all         Show full command help.
+
+_help_options
+  fi
+}
+
+# Output help for an action
+show_action_help() {
+  ACTION="$1"
   THIS=$(basename "$BASH_SOURCE")
 
   case "$ACTION" in
+
 
 
       filemap)
@@ -15,10 +36,9 @@ show_help() {
 
   
 
-usage: %THIS% filemap [--path <path>] [--guest <guest>]
+usage: %THIS% filemap [--path <path>]
 
   --path <path>
-  --guest <guest>   The guest ID.
 
 end_filemap
       ;;
@@ -29,10 +49,10 @@ end_filemap
 
   Join the host.
 
-usage: %THIS% join [--secret <secret>] [--guest <guest>]
+usage: %THIS% join [--guest <guest>] [--secret <secret>]
 
-  --secret <secret>
   --guest <guest>     The guest ID.
+  --secret <secret>
 
 end_join
       ;;
@@ -43,12 +63,11 @@ end_join
 
   Displays a message.
 
-usage: %THIS% message [--message <message>] [--title <title>] [--dialog] [--guest <guest>]
+usage: %THIS% message [--message <message>] [--title <title>] [--dialog]
 
   --message <message>   The message text.
-  --title <title>       The message text.
+  --title <title>       The message title.
   --dialog              Show a dialog, rather than a notification.
-  --guest <guest>       The guest ID.
 
 end_message
       ;;
@@ -59,11 +78,10 @@ end_message
 
   Displays a dialog message, asking a yes or no question.
 
-usage: %THIS% ask [--message <message>] [--title <title>] [--guest <guest>]
+usage: %THIS% ask [--message <message>] [--title <title>]
 
   --message <message>   The message text.
-  --title <title>       The message text.
-  --guest <guest>       The guest ID.
+  --title <title>       The message title.
 
 end_ask
       ;;
@@ -74,15 +92,24 @@ end_ask
 
   Opens a file on the host.
 
-usage: %THIS% open <path> [--type <type>] [--guest <guest>]
+usage: %THIS% open <path> [--type <type>]
 
-  <path>            A url or a path on the guest.
+  <path>          A url or a path on the guest.
   --type <type>
-  --guest <guest>   The guest ID.
 
 end_open
       ;;
-        *)
+    
+    ALL)
+      show_action_help
+      echo; show_action_help ask
+      echo; show_action_help filemap
+      echo; show_action_help join
+      echo; show_action_help message
+      echo; show_action_help open
+;;
+
+    *)
       sed "s/%THIS%/$THIS/g" << '_help'
 usage: %THIS% <action> [options]
 
@@ -99,23 +126,53 @@ _help
 
     ;;
   esac
-
-  cat << '_help_options'
-General options:
-
---help           Show this information.
---config <file>  Show this information.
-
-_help_options
 }
 
+fail() {
+  echo "$*"
+  exit 1
+}
+
+status() {
+  printf "%s\n" "$*" >&2
+}
+
+unset CONFIG
+declare -A CONFIG
+
+# Loads the config file into $CONFIG
+load_config() {
+  if [ -f "$CONFIG_FILE" ]; then
+    while read -r NAME VALUE ; do
+      NAME=$(echo "$NAME" | tr '[:upper:]' '[:lower:]')
+      CONFIG[$NAME]="$VALUE"
+    done < <(sed -n -r -e 's,^\s*([a-z0-9_]+)\s*=\s*(.*)$,\1 \2,pi' "$CONFIG_FILE")
+  fi
+}
+
+# Writes to the config file
+put_config() {
+  NAME=$1
+  VALUE=$2
+  CONFIG[$NAME]="$VALUE"
+
+  mkdir -p "$(dirname "$CONFIG_FILE")"
+
+  if grep -q "^$NAME=" "$CONFIG_FILE"; then
+    sed -i -r "s,^($NAME=).*,\1$VALUE," "$CONFIG_FILE"
+  else
+    echo "$NAME=$VALUE" >> "$CONFIG_FILE"
+  fi
+}
 
 
 REQUEST_OPTION_NAMES='dialog'
 REQUEST_OPTION_NAMES_VALUE='path guest secret message title type'
 
-OPTION_NAMES="help $REQUEST_OPTION_NAMES"
-OPTION_NAMES_VALUE="$REQUEST_OPTION_NAMES_VALUE"
+# Options
+OPTION_NAMES="help help-all $REQUEST_OPTION_NAMES"
+# Options with values
+OPTION_NAMES_VALUE="config $REQUEST_OPTION_NAMES_VALUE"
 
 OPTION_NAMES_ALL="$OPTION_NAMES $OPTION_NAMES_VALUE"
 
@@ -140,8 +197,7 @@ while [[ $# -gt 0 ]]; do
       NAME="${NAME%=*}"
 
       if ! [[ " $OPTION_NAMES_ALL " =~ ' '$NAME' ' ]]; then
-        echo "error: $CURRENT is unknown"
-        exit
+        fail "error: $CURRENT is unknown"
       fi
 
     elif [[ " $OPTION_NAMES_VALUE " =~ ' '$NAME' ' ]]; then
@@ -150,15 +206,13 @@ while [[ $# -gt 0 ]]; do
       shift
 
       if [[ "$VALUE" == --* ]] || [ -z "$VALUE" ]; then
-        echo "error: $CURRENT has no value"
-        exit
+        fail "error: $CURRENT has no value"
       fi
     elif [[ " $OPTION_NAMES " =~ ' '$NAME' ' ]]; then
       # --option
       VALUE=1
     else
-      echo "error: $CURRENT is unknown"
-      exit
+      fail "error: $CURRENT is unknown"
       VALUE=
     fi
 
@@ -175,38 +229,51 @@ done
 # Re-apply the non-options to the command line
 set -- "${EXTRA[@]}"
 
-COMMAND=$1
+ACTION=$1
 shift
 
-if [ -n "${PARAMS[help]}" ]; then
-  show_help $COMMAND
+# Show some help
+if [ -n "${PARAMS[help-all]}" ]; then
+  show_help ALL
+  exit
+elif [ -z "$ACTION" ] || [ "$ACTION" == "help" ] || [ -n "${PARAMS[help]}" ]; then
+  show_help "$ACTION"
   exit
 fi
 
-FIELDS=()
 
+load_config
+
+
+FIELDS=()
+# Add a field for the request
 add_field() {
   NAME=$1
   # types: str, bool, int
   TYPE=$2
+  # 1 if the field is required
   REQUIRED=$3
+  # 1 if value can be pulled from $1
   ANON=$4
 
+  # Check if the value is defined
   if ! [ ${PARAMS[$NAME]+1} ]; then
 
     if [ "$ANON" == 1 ] && [ "$1" != "" ]; then
+      # Take it from the next argument
       PARAMS[$NAME]=$1
       shift
     else
       if [ "$REQUIRED" == 1 ]; then
-        echo "$NAME is required"
-        exit 1
+        fail "$NAME is required"
       fi
       return
     fi
   fi
 
   VALUE="${PARAMS[$NAME]}"
+
+  # "JSON.stringify" the value
   case $TYPE in
     bool)
       if [[ "$VALUE" = "false" ]] || [[ "$VALUE" = "0" ]] || [[ -z "$VALUE" ]]; then
@@ -215,17 +282,17 @@ add_field() {
         VALUE=true
       fi
       ;;
+
     int)
       if echo -n "$VALUE" | grep -q '[^0-9]'; then
-        echo "$NAME: '$VALUE' is not a number"
-        exit
+        fail "$NAME: '$VALUE' is not a number"
       fi
 
       if [ -z "$VALUE" ]; then
         VALUE=0
       fi
-
       ;;
+
     str)
       VALUE="\"$VALUE\""
       ;;
@@ -234,19 +301,20 @@ add_field() {
   FIELDS+=("\"$NAME\": $VALUE")
 }
 
-case "$COMMAND" in
+# Build the request payload
+case "$ACTION" in
+
 
 
     filemap)
      URL_PATH='/hagi/map'
       add_field path str 0 0
-      add_field guest str 0 0
     ;;
   
     join)
      URL_PATH='/hagi/auth/join'
-      add_field secret str 0 0
       add_field guest str 0 0
+      add_field secret str 0 0
     ;;
   
     message)
@@ -254,62 +322,109 @@ case "$COMMAND" in
       add_field message str 0 0
       add_field title str 0 0
       add_field dialog bool 0 0
-      add_field guest str 0 0
     ;;
   
     ask)
      URL_PATH='/hagi/message/ask'
       add_field message str 0 0
       add_field title str 0 0
-      add_field guest str 0 0
     ;;
   
     open)
      URL_PATH='/hagi/open'
       add_field path str 1 1
       add_field type str 0 0
-      add_field guest str 0 0
     ;;
-  esac
+  
+
+  *)
+    fail "Unknown action '$ACTION'"
+    ;;
+
+esac
 
 [ -z "$URL_PATH" ] && exit
 
-DATA="{$(IFS=, ; echo "${FIELDS[*]}")}"
+# Gets a JSON field value
+get_json() {
+  JSON=$1
+  FIELD=$2
+  echo "$JSON" | python3 -c "import sys, json; print(json.load(sys.stdin)['$FIELD'])"
+}
 
-SCHEMA="http://"
-HOST="127.0.0.1:5580"
-URL="${SCHEMA}${HOST}${URL_PATH}"
+# Join a host
+join_host() {
+  if [ -z "$GUEST" ]; then
+    GUEST="$(uname -s -n | sed -r 's,(\S+)\s+(\S+),\2-\1,g' )-$RANDOM"
+    put_config guest $GUEST
+  fi
 
-RESPONSE_FILE=$(mktemp)
-RESPONSE_CODE=$(
-  curl --request POST "$URL" \
-    --header 'Content-Type: application/json' \
-    --data-raw "$DATA" \
-    --silent --show-error \
-    --write-out "%{response_code}" \
-    --output "$RESPONSE_FILE"
-)
+  $0 join --guest="$GUEST" --config="$CONFIG_FILE" || fail "Unable to join"
 
-RESULT=$?
+  load_config
+}
 
-RESPONSE=$(cat "$RESPONSE_FILE")
-rm "$RESPONSE_FILE"
+jq=$(command -v jq || command -v cat)
 
-SUCCESS=0
-if [ "$RESULT" != "0" ]; then
-  echo curl failure
-  exit
-elif [ "$RESPONSE_CODE" != 200 ]; then
-  echo "http response code $RESPONSE_CODE"
-  echo "$RESPONSE"
+RETRY=1
 
-else
-  echo ok
-  SUCCESS=1
-fi
+# Perform the request
+while true; do
 
+  # Make the json data
+  DATA="{$(IFS=, ; echo "${FIELDS[*]}")}"
 
-if [ "$SUCCESS" == 0 ]; then
-  exit 1
-fi
+  GUEST="${CONFIG[guest]}"
+  SECRET="${CONFIG[secret]}"
 
+  SCHEMA="http://"
+  HOST="127.0.0.1:5580"
+  URL="${SCHEMA}${HOST}${URL_PATH}"
+
+  RESPONSE_FILE=$(mktemp)
+  RESPONSE_CODE=$(
+    curl --request POST "$URL" \
+      --header "X-Guest: $GUEST" \
+      --header "X-Secret: $SECRET" \
+      --header 'Content-Type: application/json' \
+      --data-raw "$DATA" \
+      --silent --show-error \
+      --write-out "%{response_code}" \
+      --output "$RESPONSE_FILE"
+  )
+
+  RESULT=$?
+
+  RESPONSE=$(cat "$RESPONSE_FILE")
+  rm "$RESPONSE_FILE"
+
+  echo "$RESPONSE" | $jq
+
+  if [ "$RESULT" != "0" ]; then
+    # curl did not work
+    fail curl failure
+
+  elif [ "$RESPONSE_CODE" == 401 ] && [ "$ACTION" != "join" ] && [ "$RETRY" = 1 ]; then
+    # Unauthorized - try to join the host.
+    RETRY=0
+    status Unauthorized. Trying to join the host...
+    join_host
+
+    status Retrying original request...
+    continue
+
+  elif [ "$RESPONSE_CODE" != 200 ]; then
+    # Not a good response
+    status "http response code $RESPONSE_CODE"
+    fail "$RESPONSE"
+
+  elif [ "$ACTION" == "join" ]; then
+    # For joining, store the secret in the config
+    SECRET=$(get_json "$RESPONSE" "guestSecret")
+    put_config secret "$SECRET"
+  fi
+
+  break
+done
+
+status ok

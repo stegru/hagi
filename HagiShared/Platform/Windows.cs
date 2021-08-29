@@ -2,6 +2,8 @@ using System.Diagnostics;
 
 namespace HagiShared.System
 {
+    using Platform;
+
     public class Windows : OS
     {
         public override void Open(string path)

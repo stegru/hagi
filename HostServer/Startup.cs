@@ -9,6 +9,8 @@ using Microsoft.Extensions.Options;
 
 namespace HostServer
 {
+    using Auth;
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -33,12 +35,18 @@ namespace HostServer
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
         {
-            if (env.IsDevelopment())
+            if (false && env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/error");
+            }
 
             app.UseRouting();
+
+            app.UseGuestAuth();
 
             app.UseAuthorization();
 

@@ -5,22 +5,20 @@ using System.Text.RegularExpressions;
 
 namespace GuestClient
 {
+    /// <summary>
+    /// Simple config file for "key=value" items.
+    /// </summary>
     public class Config
     {
-        private static readonly string DefaultFile =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "hagi-guest", "guest.ini");
+        private static readonly string ConfigFile =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "hagi-guest", "guest.conf");
 
         private readonly string _file;
 
-        public static Config Current { get; set; }
+        public static Config Current { get; } = new Config(Config.ConfigFile);
 
-        public static void Load(string? file = null)
-        {
-            Config.Current = new Config(file ?? Config.DefaultFile);
-        }
-
-        private Dictionary<string, string?> values = new Dictionary<string, string?>();
-        private HashSet<string> updated = new HashSet<string>();
+        private readonly Dictionary<string, string?> values = new Dictionary<string, string?>();
+        private readonly HashSet<string> updated = new HashSet<string>();
 
         private Config(string file)
         {
@@ -28,6 +26,9 @@ namespace GuestClient
             this.LoadFile();
         }
 
+        /// <summary>
+        /// The value, or null if not found.
+        /// </summary>
         public string? this[string key]
         {
             get => this.values.TryGetValue(key, out string? value)
@@ -54,41 +55,47 @@ namespace GuestClient
             this.updated.Clear();
         }
 
-        private void SaveFile()
+        public void SaveFile()
         {
             if (this.updated.Count > 0)
             {
                 List<string> newLines = new List<string>();
 
-                foreach (string line in File.ReadAllLines(this._file))
+                if (File.Exists(this._file))
                 {
-                    (string key, string value) = this.ParseLine(line);
-
-                    string? newLine;
-                    if (!string.IsNullOrEmpty(key) && this.updated.Contains(key))
+                    // Read each line, only changing the lines containing the values that have been updated.
+                    foreach (string line in File.ReadAllLines(this._file))
                     {
-                        this.updated.Remove(key);
-                        string? newValue = this[key];
-                        if (newValue == null)
+                        (string key, string value) = this.ParseLine(line);
+
+                        string? newLine;
+                        if (!string.IsNullOrEmpty(key) && this.updated.Contains(key))
                         {
-                            newLine = null;
+                            this.updated.Remove(key);
+
+                            string? newValue = this[key];
+                            if (newValue == null)
+                            {
+                                newLine = null;
+                            }
+                            else
+                            {
+                                newLine = $"{key}={newValue}";
+                            }
                         }
                         else
                         {
-                            newLine = $"{key}={newValue}";
+                            newLine = line;
                         }
-                    }
-                    else
-                    {
-                        newLine = line;
-                    }
 
-                    if (newLine != null)
-                    {
-                        newLines.Add(newLine);
+                        if (newLine != null)
+                        {
+                            newLines.Add(newLine);
+                        }
                     }
                 }
 
+                // Write the new values
                 foreach (string key in this.updated)
                 {
                     string? newValue = this[key];
@@ -98,14 +105,21 @@ namespace GuestClient
                     }
                 }
 
+                string? directoryName = Path.GetDirectoryName(this._file);
+                if (directoryName != null)
+                {
+                    Directory.CreateDirectory(directoryName);
+                }
 
-                Directory.CreateDirectory(Path.GetDirectoryName(this._file));
                 File.WriteAllLines(this._file, newLines);
             }
         }
 
         private readonly Regex _parseLine = new Regex(@"^\s*(?<key>[^;#=][^=]*)\s*=\s*(?<value>.*)\s*$");
 
+        /// <summary>
+        /// Parse a "key=value" line.
+        /// </summary>
         private (string key, string value) ParseLine(string line)
         {
             Match match = this._parseLine.Match(line);

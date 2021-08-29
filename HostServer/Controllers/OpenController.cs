@@ -4,7 +4,7 @@ namespace HostServer.Controllers
 {
     using System;
     using HagiShared.Api;
-    using HagiShared.System;
+    using HagiShared.Platform;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
 
@@ -22,7 +22,7 @@ namespace HostServer.Controllers
         [HttpPost("map")]
         public FileMapResponse Map(FileMapRequest request)
         {
-            GuestConfig config = this.GuestConfig(request);
+            GuestConfig config = this.GuestConfig;
 
             string? mapping = config.MapPath(request.Path);
             return new FileMapResponse(mapping);
@@ -31,7 +31,7 @@ namespace HostServer.Controllers
         [HttpPost("open")]
         public HostResponse Post(OpenRequest openRequest)
         {
-            GuestConfig config = this.GuestConfig(openRequest);
+            GuestConfig config = this.GuestConfig;
 
             string? path = openRequest.Path;
 
@@ -53,10 +53,6 @@ namespace HostServer.Controllers
             if (path != null)
             {
                 OS.Current.Open(path);
-            }
-            else
-            {
-                response.Failed = true;
             }
 
             return response;

@@ -9,7 +9,7 @@ namespace HagiShared.Api
 
     public class FileMapResponse : HostResponse
     {
-        public FileMapResponse(string? path) : base(string.IsNullOrEmpty(path))
+        public FileMapResponse(string? path)
         {
             this.Path = path ?? string.Empty;
         }

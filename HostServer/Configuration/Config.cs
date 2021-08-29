@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 
 namespace HostServer.Configuration
 {
+    using System;
+
     /// <summary>
     /// Host server configuration.
     /// </summary>
@@ -21,6 +23,9 @@ namespace HostServer.Configuration
 
         [JsonProperty]
         public Dictionary<string, GuestConfig> GuestConfig { get; set; } = new Dictionary<string, GuestConfig>();
+
+        [JsonProperty]
+        public string? SharedSecret { get; set; }
 
         public Config(ILogger<Config> logger, Paths paths, AppSettings appSettings, IConfiguration configuration)
         {
@@ -71,6 +76,37 @@ namespace HostServer.Configuration
             return this.GuestConfig.TryGetValue(guestId, out GuestConfig? guestConfig)
                 ? guestConfig
                 : this.GuestConfig["*"];
+        }
+
+        /// <summary>
+        /// Gets configuration for a guest.
+        /// </summary>
+        public GuestConfig? GetGuest(string guestId, bool noFallback)
+        {
+            return this.GuestConfig.TryGetValue(guestId, out GuestConfig? guestConfig)
+                ? guestConfig
+                : noFallback
+                    ? null
+                    : this.GuestConfig["*"];
+        }
+
+        /// <summary>
+        /// Adds a new guest.
+        /// </summary>
+        public GuestConfig AddGuest(string guestId)
+        {
+            if (this.GuestConfig.ContainsKey(guestId))
+            {
+                throw new ApplicationException($"Guest '{guestId}' already exists.");
+            }
+
+            GuestConfig guest = new GuestConfig()
+            {
+                GuestId = guestId
+            };
+
+            this.GuestConfig.Add(guestId, guest);
+            return guest;
         }
     }
 

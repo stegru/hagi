@@ -11,7 +11,7 @@ namespace GuestClient
 
     public partial class RequestOptions {
 
-        public static Type[] AllTypes = {
+        private static Type[] GeneratedTypes = {
             @string.Join(",\n", this.AllRequests.Select(r => $"typeof({r.RequestType.Name}Options)"))
         };
     }

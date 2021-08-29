@@ -72,7 +72,8 @@ namespace HostServer.UI
             {
                 "zenity",
                 $"--text={this.Message}",
-                $"--title={this.Title}"
+                $"--title={this.Title}",
+                $"--width=200"
             };
 
             if (this.Question)

@@ -27,7 +27,7 @@ namespace ClientCodeGen
 
         public async Task Generate()
         {
-            //await this.GenerateCS();
+            await this.GenerateCS();
             await this.GenerateBash();
         }
 

@@ -1,16 +1,20 @@
 namespace HostServer.Configuration
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Runtime.Serialization;
+    using System.Security.Cryptography;
     using Newtonsoft.Json;
 
     /// <summary>
     /// Configuration for a guest.
     /// </summary>
+    [JsonObject(MemberSerialization.OptIn)]
     public class GuestConfig
     {
+        [JsonProperty]
         public Dictionary<string, string> PathMappings { get; set; } = null!;
 
         private List<PathMapping> guestPaths = null!;
@@ -18,7 +22,10 @@ namespace HostServer.Configuration
         [JsonIgnore]
         internal bool IsDefault => this.GuestId == "*";
 
-        internal string GuestId { get; set; } = null!;
+        [JsonProperty]
+        public string GuestId { get; set; } = null!;
+        [JsonProperty]
+        public string Secret { get; set; } = null!;
 
 
         [OnDeserialized]
@@ -55,6 +62,18 @@ namespace HostServer.Configuration
             }
 
             return null;
+        }
+
+        /// <summary>Generates the secret, if there's not one already.</summary>
+        internal void GenerateSecret()
+        {
+            if (string.IsNullOrEmpty(this.Secret))
+            {
+                using RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+                byte[] bytes = new byte[15];
+                rng.GetBytes(bytes);
+                this.Secret = new string(Convert.ToBase64String(bytes).Where(char.IsLetterOrDigit).ToArray());
+            }
         }
     }
 

@@ -25,8 +25,6 @@ namespace HostServer.Controllers
         [HttpPost("show")]
         public MessageResponse ShowMessage(MessageRequest request)
         {
-            GuestConfig config = this.GuestConfig(request);
-
             UserMessage message = MessageController.MakeMessage(request);
 
             _ = message.Show();
@@ -40,8 +38,6 @@ namespace HostServer.Controllers
         [HttpPost("ask")]
         public async Task<MessageResponse> ShowQuestion(AskRequest request)
         {
-            GuestConfig config = this.GuestConfig(request);
-
             UserMessage message = MessageController.MakeMessage(request);
 
             bool answer = await message.Show();
