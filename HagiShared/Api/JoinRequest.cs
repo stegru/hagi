@@ -6,6 +6,9 @@ namespace HagiShared.Api
         [Option("guest", Info = "The guest ID.")]
         public virtual string Guest { get; set; } = null!;
 
+        [Option("name", Info = "The machine name.")]
+        public virtual string MachineName { get; set; } = null!;
+
         [Option("secret")]
         public string? SharedSecret { get; set; }
     }

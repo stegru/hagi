@@ -1,17 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
-
-namespace GuestClient
+namespace Hagi.HagiGuest
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Text.RegularExpressions;
+
     /// <summary>
     /// Simple config file for "key=value" items.
     /// </summary>
     public class Config
     {
-        private static readonly string ConfigFile =
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "hagi-guest", "guest.conf");
+        private static readonly string ConfigFile = Config.GetConfigFilePath("guest.conf");
+
+        /// <summary>Gets the path to file in the config directory.</summary>
+        public static string GetConfigFilePath(string? filename = null) =>
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "hagi-guest",
+                filename ?? string.Empty);
 
         private readonly string _file;
 

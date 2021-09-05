@@ -35,12 +35,14 @@ namespace HostServer.Controllers
                     throw new AuthenticationException("Invalid secret");
                 }
             }
-            else
+            else if (this.GuestConfig == null!)
             {
-                UserMessage userMessage = new UserMessage($"Guest machine wants to access the host.\n\nID: <tt>{request.Guest}</tt>\n\n<big>Grant access?</big>")
-                {
-                    Question = true
-                };
+                UserMessage userMessage =
+                    new UserMessage(
+                        $"Guest machine wants to access the host.\n\nName: <tt>{request.MachineName}</tt>\nID: <tt>{request.Guest}</tt>\n\n<big>Grant access?</big>")
+                    {
+                        Question = true
+                    };
 
                 bool allow = await userMessage.Show();
                 if (!allow)
@@ -51,6 +53,7 @@ namespace HostServer.Controllers
 
             GuestConfig guest = this.Config.GetGuest(request.Guest, true) ?? this.Config.AddGuest(request.Guest);
             guest.GenerateSecret();
+            guest.MachineName = request.MachineName;
 
             return new JoinResponse(guest.GuestId, guest.Secret);
         }

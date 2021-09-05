@@ -26,7 +26,8 @@ namespace HostServer.Configuration
         public string GuestId { get; set; } = null!;
         [JsonProperty]
         public string Secret { get; set; } = null!;
-
+        [JsonProperty]
+        public string MachineName { get; set; } = null!;
 
         [OnDeserialized]
         public void Initialise()

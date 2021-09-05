@@ -4,7 +4,7 @@
 
 [CommandLine.Verb("@Model.Request.Name?.ToLowerInvariant()", HelpText = "@Model.Request.Info")]
 [Request("@Model.Request.Path")]
-public class @(Model.RequestType.Name)Options : RequestOptions
+public partial class @(Model.RequestType.Name)Options : RequestOptions
 {
     public override string RequestUrl => "@Model.Request.Path";
 

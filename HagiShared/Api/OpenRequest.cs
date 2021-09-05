@@ -9,15 +9,11 @@ namespace HagiShared.Api
         [JsonPropertyName("path")]
         public string Path { get; set; } = null!;
 
-        [Option("type")]
-        public OpenPathType Type { get; set; }
-    }
+        [Option("file", Info = "'path' is a file")]
+        public bool File { get; set; }
 
-    public enum OpenPathType
-    {
-        Any = 0,
-        File = 1,
-        Url = 2
+        [Option("url", Info = "'path' is a url")]
+        public bool Url { get; set; }
     }
 
     public class OpenResponse : HostResponse

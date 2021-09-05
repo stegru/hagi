@@ -33,27 +33,25 @@ namespace HostServer.Controllers
         {
             GuestConfig config = this.GuestConfig;
 
-            string? path = openRequest.Path;
+            string path;
 
-            if (openRequest.Type == OpenPathType.Any)
+            if (openRequest.File)
             {
-                if (Uri.TryCreate(path, UriKind.Absolute, out Uri? uri))
-                {
-                    openRequest.Type = uri.IsFile ? OpenPathType.File : OpenPathType.Url;
-                }
+                path = config.MapPath(openRequest.Path)
+                    ?? throw new ApiException($"Unable to map '{openRequest.Path}'");
             }
-
-            if (openRequest.Type == OpenPathType.File)
+            else
             {
-                path = config.MapPath(path);
+                path = openRequest.Path;
+                if (openRequest.Url && !Uri.TryCreate(path, UriKind.Absolute, out Uri? uri))
+                {
+                    throw new ApiException($"{nameof(openRequest.Url)} does not look like a url");
+                }
             }
 
             OpenResponse response = new OpenResponse();
 
-            if (path != null)
-            {
-                OS.Current.Open(path);
-            }
+            OS.Current.Open(path);
 
             return response;
         }

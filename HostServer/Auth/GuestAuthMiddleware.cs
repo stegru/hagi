@@ -28,11 +28,13 @@ namespace HostServer.Auth
 
             bool authRequired = action?.GetCustomAttribute<NoAuthAttribute>() == null;
 
-            if (authRequired)
-            {
-                string guestId = context.Request.Headers["X-Guest"].ToString().Trim();
-                string secret = context.Request.Headers["X-Secret"].ToString().Trim();
+            string guestId = context.Request.Headers["X-Guest"].ToString().Trim();
+            string secret = context.Request.Headers["X-Secret"].ToString().Trim();
 
+            bool authenticated;
+            GuestConfig? guestConfig;
+            try
+            {
                 if (string.IsNullOrEmpty(guestId))
                 {
                     throw new InvalidCredentialException("X-Guest header is missing");
@@ -43,7 +45,7 @@ namespace HostServer.Auth
                     throw new InvalidCredentialException("X-Secret header is missing");
                 }
 
-                GuestConfig? guestConfig = config.GetGuest(guestId, true);
+                guestConfig = config.GetGuest(guestId, true);
 
                 if (guestConfig == null)
                 {
@@ -55,6 +57,16 @@ namespace HostServer.Auth
                     throw new InvalidCredentialException("Wrong secret");
                 }
 
+                authenticated = true;
+            }
+            catch when (!authRequired)
+            {
+                authenticated = false;
+                guestConfig = null;
+            }
+
+            if (authenticated && guestConfig != null)
+            {
                 context.SetGuestConfig(guestConfig);
             }
 

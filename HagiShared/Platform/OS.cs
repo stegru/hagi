@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 namespace HagiShared.Platform
 {
     using System;
+    using global::System;
 
     // ReSharper disable once InconsistentNaming
     public abstract class OS
@@ -11,7 +12,7 @@ namespace HagiShared.Platform
 
         static OS()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (OperatingSystem.IsWindows())
             {
                 OS.Current = new Windows();
             }
@@ -28,6 +29,13 @@ namespace HagiShared.Platform
 
         public string Name { get; }
 
+        public abstract Platform Platform { get; }
         public abstract void Open(string path);
+    }
+
+    public enum Platform
+    {
+        Linux,
+        Windows
     }
 }

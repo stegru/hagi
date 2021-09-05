@@ -1,4 +1,4 @@
-namespace GuestClient
+namespace Hagi.HagiGuest
 {
     using System;
     using System.IO;
@@ -47,6 +47,11 @@ namespace GuestClient
             if (this.options is JoinRequestOptions joinRequest)
             {
                 this.options.GuestId = joinRequest.Guest;
+            }
+            else if (Config.Current["machine-name"] != Environment.MachineName)
+            {
+                // Machine name has changed since last time.
+                await this.JoinHost();
             }
 
             do
@@ -142,9 +147,14 @@ namespace GuestClient
 
             if (response is JoinResponse joinResponse)
             {
+
                 Config.Current["guest"] = joinResponse.GuestId;
                 Config.Current["secret"] = joinResponse.GuestSecret;
                 Config.Current["host"] = this.options.Host;
+
+                JoinRequest? joinRequest = request as JoinRequest;
+                Config.Current["machine-name"] = joinRequest?.MachineName ?? Environment.MachineName;
+
                 Config.Current.SaveFile();
             }
 
@@ -166,7 +176,8 @@ namespace GuestClient
 
             JoinRequest request = new JoinRequest()
             {
-                Guest = guest
+                Guest = guest,
+                MachineName = Environment.MachineName
             };
 
             await this.MakeRequest<JoinResponse>(request);

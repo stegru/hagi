@@ -49,9 +49,10 @@ end_filemap
 
   Join the host.
 
-usage: %THIS% join [--guest <guest>] [--secret <secret>]
+usage: %THIS% join [--guest <guest>] [--name <name>] [--secret <secret>]
 
   --guest <guest>     The guest ID.
+  --name <name>       The machine name.
   --secret <secret>
 
 end_join
@@ -92,10 +93,11 @@ end_ask
 
   Opens a file on the host.
 
-usage: %THIS% open <path> [--type <type>]
+usage: %THIS% open <path> [--file] [--url]
 
-  <path>          A url or a path on the guest.
-  --type <type>
+  <path>   A url or a path on the guest.
+  --file   'path' is a file
+  --url    'path' is a url
 
 end_open
       ;;
@@ -166,8 +168,8 @@ put_config() {
 }
 
 
-REQUEST_OPTION_NAMES='dialog'
-REQUEST_OPTION_NAMES_VALUE='path guest secret message title type'
+REQUEST_OPTION_NAMES='dialog file url'
+REQUEST_OPTION_NAMES_VALUE='path guest name secret message title'
 
 # Options
 OPTION_NAMES="help help-all $REQUEST_OPTION_NAMES"
@@ -314,6 +316,7 @@ case "$ACTION" in
     join)
      URL_PATH='/hagi/auth/join'
       add_field guest str 0 0
+      add_field name str 0 0
       add_field secret str 0 0
     ;;
   
@@ -333,7 +336,8 @@ case "$ACTION" in
     open)
      URL_PATH='/hagi/open'
       add_field path str 1 1
-      add_field type str 0 0
+      add_field file bool 0 0
+      add_field url bool 0 0
     ;;
   
 

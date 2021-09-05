@@ -1,31 +1,49 @@
-﻿using CommandLine;
+﻿using System.Reflection;
 
-namespace GuestClient
+namespace Hagi.HagiGuest
 {
     using System;
+    using CommandLine;
+    using Install;
 
     class Program
     {
         static void Main(string[] args)
         {
-            RequestOptions? options = null;
+            ClientOptions? options = null;
 
-            Parser.Default.ParseArguments(args, RequestOptions.AllTypes)
-                .WithParsed(o => options = o as RequestOptions);
+            Parser.Default.ParseArguments(args, ClientOptions.AllTypes)
+                .WithParsed(o => options = o as ClientOptions);
 
-            if (options == null)
+            switch (options)
             {
-                return;
-            }
+                case null:
+                    break;
 
-            GuestClient guestClient = new GuestClient(options);
-            try
-            {
-                guestClient.Run().Wait();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
+                case UninstallOptions uninstallOptions:
+                    Console.WriteLine("Uninstalling");
+                    Installer.RemoveAll(uninstallOptions);
+                    break;
+
+                case InstallOptions installOptions:
+                    Console.WriteLine("Installing");
+                    Installer.InstallAll(installOptions);
+                    break;
+
+                case RequestOptions requestOptions:
+                {
+                    GuestClient guestClient = new GuestClient(requestOptions);
+                    try
+                    {
+                        guestClient.Run().Wait();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    break;
+                }
             }
         }
     }
