@@ -5,6 +5,7 @@ namespace Hagi.HagiGuest
 {
     using System;
     using Shared.Api;
+    using Shared.Api.Guest;
 
     public partial class RequestOptions {
 

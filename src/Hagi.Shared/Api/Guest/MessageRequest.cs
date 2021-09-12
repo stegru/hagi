@@ -1,4 +1,4 @@
-namespace Hagi.Shared.Api
+namespace Hagi.Shared.Api.Guest
 {
     [Request("message/show", Info = "Displays a message.")]
     public class MessageRequest : HostRequest

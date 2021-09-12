@@ -10,6 +10,7 @@ namespace Hagi.HagiGuest
     using System.Text.Json;
     using System.Threading.Tasks;
     using Shared.Api;
+    using Shared.Api.Guest;
     using Shared.Network;
     using Shared.Platform;
 

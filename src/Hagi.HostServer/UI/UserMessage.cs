@@ -13,9 +13,9 @@ namespace Hagi.HostServer.UI
     public class UserMessage
     {
         public string Message { get; set; }
-        public string? Title { get; set; }
-        public bool Dialog { get; set; }
-        public bool Question { get; set; }
+        public string? Title { get; init; }
+        public bool Dialog { get; init; }
+        public bool Question { get; init; }
 
         public DialogType DialogType { get; set; } = DialogType.Info;
 
@@ -30,7 +30,7 @@ namespace Hagi.HostServer.UI
             string file = args.First();
             ProcessStartInfo startInfo = new ProcessStartInfo()
             {
-                FileName = args.First(),
+                FileName = args.First()
             };
 
             foreach (string arg in args.Skip(1))

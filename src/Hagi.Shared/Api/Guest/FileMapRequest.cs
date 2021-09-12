@@ -1,4 +1,4 @@
-namespace Hagi.Shared.Api
+namespace Hagi.Shared.Api.Guest
 {
     [Request("map")]
     public class FileMapRequest : HostRequest

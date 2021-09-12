@@ -9,7 +9,7 @@
 @{
   Dictionary<string, string?> summaries = new Dictionary<string, string?>();
 
-  foreach (RequestModel request in AllRequests)
+  foreach (RequestModel request in GuestRequests)
   {
     StringBuilder fullCommand = new StringBuilder(request.Request.NameLower);
     StringBuilder shortCommand = new StringBuilder(request.Request.NameLower);
@@ -70,7 +70,7 @@ usage: %THIS% @fullCommand.ToString()
 
     ALL)
       show_action_help
-@foreach (string action in AllRequests.Select(r => r.Request.NameLower).OrderBy(a => a))
+@foreach (string action in GuestRequests.Select(r => r.Request.NameLower).OrderBy(a => a))
 {
       @:echo; show_action_help @action
 }

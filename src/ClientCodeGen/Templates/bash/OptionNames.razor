@@ -5,7 +5,7 @@
 @{
   List<string> optionNames = new List<string>();
   List<string> optionNamesValue = new List<string>();
-  foreach (OptionAttribute option in AllRequests.SelectMany(request => request.Options))
+  foreach (OptionAttribute option in GuestRequests.SelectMany(request => request.Options))
   {
     if (option.IsFlag)
     {

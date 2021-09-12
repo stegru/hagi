@@ -5,6 +5,7 @@
     using Shared.Api;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Shared.Api.Guest;
     using UI;
 
     /// <summary>
@@ -12,7 +13,7 @@
     /// </summary>
     [ApiController]
     [Route("hagi/message")]
-    public class MessageController : HagiControllerBase
+    public class MessageController : GuestController
     {
         public MessageController(ILogger<OpenController> logger, Config config) : base(logger, config)
         {
@@ -53,7 +54,6 @@
                 Dialog = request.Dialog,
                 Question = request is AskRequest,
             };
-
         }
     }
 }

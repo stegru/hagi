@@ -7,18 +7,24 @@ namespace Hagi.HostServer.Controllers
     using Configuration;
     using GuestIntegration;
 
-    public class HagiControllerBase : ControllerBase
+    public abstract class HagiControllerBase : ControllerBase
     {
         protected readonly ILogger<OpenController> Logger;
         protected readonly Config Config;
-
-        protected Guest Guest => this.HttpContext.GetGuest();
 
         public HagiControllerBase(ILogger<OpenController> logger, Config config)
         {
             this.Logger = logger;
             this.Config = config;
         }
+    }
 
+    public abstract class GuestController : HagiControllerBase
+    {
+        protected Guest Guest => this.HttpContext.GetGuest();
+
+        protected GuestController(ILogger<OpenController> logger, Config config) : base(logger, config)
+        {
+        }
     }
 }

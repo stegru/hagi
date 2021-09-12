@@ -8,13 +8,14 @@
     using Shared.Platform;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Shared.Api.Guest;
 
     /// <summary>
     /// Opens something on this machine.
     /// </summary>
     [ApiController]
     [Route("hagi")]
-    public class OpenController : HagiControllerBase
+    public class OpenController : GuestController
     {
         public OpenController(ILogger<OpenController> logger, Config config) : base(logger, config)
         {

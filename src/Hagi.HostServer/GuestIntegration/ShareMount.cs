@@ -100,14 +100,9 @@
                 })
                 : await guest.Config.Commands.Unmount.Run(guest);
 
-            if (mount)
-            {
-                guest.MountPath = result["mount_path"];
-            }
-            else
-            {
-                guest.MountPath = null;
-            }
+            guest.MountPath = mount
+                ? result["mount_path"]
+                : null;
 
             return result.Success;
         }

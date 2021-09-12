@@ -10,14 +10,14 @@
             switch (id)
             {
                 case "Help":
-                    Include<HelpTemplate>(AllRequests);
+                    Include<HelpTemplate>(GuestRequests);
                     break;
                 case "BuildRequest":
-                    Include<BuildRequestTemplate>(AllRequests);
+                    Include<BuildRequestTemplate>(GuestRequests);
                     break;
 
                 case "OptionNames":
-                    Include<OptionNamesTemplate>(AllRequests);
+                    Include<OptionNamesTemplate>(GuestRequests);
                     break;
             }
         }

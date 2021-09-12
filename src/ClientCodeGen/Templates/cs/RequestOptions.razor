@@ -12,10 +12,10 @@ namespace Hagi.HagiGuest
     public partial class RequestOptions {
 
         public static readonly Type[] GeneratedTypes = {
-@string.Join(",\n", AllRequests.Select(r => $"typeof({r.RequestType.Name}Options)"))
+@string.Join(",\n", GuestRequests.Select(r => $"typeof({r.RequestType.Name}Options)"))
 };
     }
-@foreach (RequestModel requestModel in AllRequests)
+@foreach (RequestModel requestModel in GuestRequests)
 {
     Include<RequestTemplate>(requestModel);
 }

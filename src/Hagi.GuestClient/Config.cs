@@ -78,14 +78,9 @@ namespace Hagi.HagiGuest
                             this.updated.Remove(key);
 
                             string? newValue = this[key];
-                            if (newValue == null)
-                            {
-                                newLine = null;
-                            }
-                            else
-                            {
-                                newLine = $"{key}={newValue}";
-                            }
+                            newLine = newValue == null
+                                ? null
+                                : $"{key}={newValue}";
                         }
                         else
                         {

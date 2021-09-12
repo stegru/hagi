@@ -1,7 +1,7 @@
-using System.Text.Json.Serialization;
-
-namespace Hagi.Shared.Api
+namespace Hagi.Shared.Api.Guest
 {
+    using System.Text.Json.Serialization;
+
     [Request("open", Info = "Opens a file on the host.")]
     public class OpenRequest : HostRequest
     {

@@ -9,11 +9,12 @@
     using Shared.Api;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Logging;
+    using Shared.Api.Guest;
     using UI;
 
     [ApiController]
     [Route("hagi/auth")]
-    public class AuthController : HagiControllerBase
+    public class AuthController : GuestController
     {
         public AuthController(ILogger<OpenController> logger, Config config) : base(logger, config)
         {
@@ -56,6 +57,8 @@
             guest.MachineName = request.MachineName;
 
             await guest.MountShare(true);
+
+            this.Config.Save();
 
             return new JoinResponse(guest.GuestId, guest.Secret);
         }

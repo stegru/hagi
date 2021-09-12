@@ -7,13 +7,34 @@ using Hagi.Shared.Api;
 
 namespace ClientCodeGen.Templates
 {
+    using System.Linq;
+    using Hagi.Shared.Api.Config;
+
     public class AllRequestsTemplate : BaseTemplate<object>
     {
         protected List<RequestModel> AllRequests { get; private set; } = null!;
+        protected List<RequestModel> GuestRequests { get; private set; } = null!;
+        protected List<RequestModel> ConfigRequests { get; private set; } = null!;
 
         protected override void OnStart()
         {
             this.AllRequests = this.GetAllRequests();
+
+            this.GuestRequests = new List<RequestModel>();
+            this.ConfigRequests = new List<RequestModel>();
+
+            foreach (RequestModel request in this.AllRequests)
+            {
+                if (request.RequestType.IsSubclassOf(typeof(ConfigRequest)))
+                {
+                    this.ConfigRequests.Add(request);
+                }
+                else
+                {
+                    this.GuestRequests.Add(request);
+                }
+            }
+
             base.OnStart();
         }
 

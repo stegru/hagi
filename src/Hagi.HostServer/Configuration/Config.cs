@@ -8,7 +8,9 @@ using Newtonsoft.Json;
 namespace Hagi.HostServer.Configuration
 {
     using System;
+    using System.Security.Cryptography;
     using GuestIntegration;
+    using Microsoft.AspNetCore.Identity;
 
     /// <summary>
     /// Host server configuration.
@@ -16,6 +18,7 @@ namespace Hagi.HostServer.Configuration
     [JsonObject(MemberSerialization.OptIn)]
     public class Config
     {
+        private string? _configFile;
         public ILogger<Config> Logger { get; }
         public Paths Paths { get; }
         public AppSettings AppSettings { get; }
@@ -29,7 +32,34 @@ namespace Hagi.HostServer.Configuration
         public string? SharedSecret { get; set; }
 
         [JsonProperty]
-        public ShellCommands Commands { get; set; } = new ShellCommands();
+        internal ShellCommands Commands { get; set; } = new ShellCommands();
+
+        [JsonProperty]
+        public bool InitialSetupComplete { get; set; }
+
+        [JsonProperty]
+        public string? ConfigPasswordHash { get; set; }
+
+        public void SetPassword(string username, string password)
+        {
+            PasswordHasher<string> passwordHasher = new PasswordHasher<string>();
+            this.ConfigPasswordHash = passwordHasher.HashPassword(username, $"{username}:{password}");
+        }
+
+        public bool CheckPassword(string username, string password)
+        {
+            PasswordHasher<string> passwordHasher = new PasswordHasher<string>();
+            PasswordVerificationResult result =
+                passwordHasher.VerifyHashedPassword(username, this.ConfigPasswordHash, $"{username}:{password}");
+
+            if (result == PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                this.SetPassword(username, password);
+            }
+
+            return result != PasswordVerificationResult.Failed;
+
+        }
 
         public Config(ILogger<Config> logger, Paths paths, AppSettings appSettings, IConfiguration configuration)
         {
@@ -50,10 +80,8 @@ namespace Hagi.HostServer.Configuration
                 }
             }
 
-
-            //this.Load(configFile);
-            this.Load(this.Paths.GetDefaultConfigFile("hagi-host.json5"));
-            this.Save(configFile);
+            this._configFile = configFile;
+            this.Load(configFile);
         }
 
         public void Load(string configFile)
@@ -74,11 +102,16 @@ namespace Hagi.HostServer.Configuration
             }
         }
 
-        public void Save(string configFile)
+        public void Save(string? configFile = null)
         {
-            using TextWriter writer = new StreamWriter(configFile);
-            JsonSerializer.Create().Serialize(writer, this);
-            writer.Close();
+            configFile ??= this._configFile;
+
+            if (configFile != null)
+            {
+                using TextWriter writer = new StreamWriter(configFile);
+                JsonSerializer.Create().Serialize(writer, this);
+                writer.Close();
+            }
         }
 
         /// <summary>

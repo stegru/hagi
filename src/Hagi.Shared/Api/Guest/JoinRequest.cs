@@ -1,4 +1,4 @@
-namespace Hagi.Shared.Api
+namespace Hagi.Shared.Api.Guest
 {
     [Request("auth/join", Info = "Join the host.")]
     public class JoinRequest : HostRequest

@@ -2,7 +2,7 @@
 @using Hagi.Shared.Api
 @inherits BuildRequestTemplate
 
-@foreach (RequestModel request in AllRequests)
+@foreach (RequestModel request in GuestRequests)
 {
   <text>
     @request.Request.NameLower)

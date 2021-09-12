@@ -5,6 +5,7 @@ namespace Hagi.HostServer.Auth
     using System.Security.Authentication;
     using System.Threading.Tasks;
     using Configuration;
+    using Controllers;
     using GuestIntegration;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
@@ -24,6 +25,13 @@ namespace Hagi.HostServer.Auth
 
         public async Task Invoke(HttpContext context, Config config)
         {
+            TypeInfo? controller = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>()?.ControllerTypeInfo;
+
+            if (controller == null || !controller.IsSubclassOf(typeof(GuestController)))
+            {
+                await this._next(context);
+                return;
+            }
 
             MethodInfo? action = context.GetEndpoint()?.Metadata.GetMetadata<ControllerActionDescriptor>()?.MethodInfo;
 

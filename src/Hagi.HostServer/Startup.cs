@@ -10,12 +10,18 @@ namespace Hagi.HostServer
 {
     using Auth;
     using Configuration;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Serialization;
 
     public class Startup
     {
         public Startup(IConfiguration configuration)
         {
             this.Configuration = configuration;
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings()
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
         }
 
         public IConfiguration Configuration { get; }
@@ -23,6 +29,7 @@ namespace Hagi.HostServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
             services.AddControllers();
             services.Configure<AppSettings>(this.Configuration.GetSection(AppSettings.SectionName));
             services.AddSingleton<AppSettings>(sp => sp.GetRequiredService<IOptions<AppSettings>>().Value.Initialise());
@@ -44,8 +51,21 @@ namespace Hagi.HostServer
                 app.UseExceptionHandler("/error");
             }
 
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
             app.UseRouting();
 
+            if (env.IsDevelopment())
+            {
+                app.UseCors(c => c
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .SetIsOriginAllowed(_ => true));
+
+            }
+
+            app.UseConfigAuth();
             app.UseGuestAuth();
 
             app.UseAuthorization();
